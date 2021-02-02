@@ -1,0 +1,37 @@
+{% extends 'correspondence/main_template.html' %}
+
+{% block content %}
+<div class="card mb-4">
+  <div class="card-header">
+    Documento
+  </div>
+  <div class="card-body">
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="exampleFormControlTextarea1">Texto de respuesta</label>
+        <textarea required class="form-control" id="id_answer" name="answer" rows="5">{{answer}}</textarea>
+        <button type="submit" name="button" class="btn btn-success mt-3">Proyectar respuesta</button>
+      </div>
+    </form>
+
+    {% if response_file %}
+    <div class="embed-responsive embed-responsive-16by9">
+        <iframe class="embed-responsive-item" src="../../../{{response_file}}">
+        </iframe>
+    </div>
+    {% endif %}
+
+    {%  if radicate.document_file %}
+    <div class="embed-responsive embed-responsive-16by9 mt-5">
+        <iframe class="embed-responsive-item" src="{{ radicate.document_file.url }}">
+        </iframe>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+
+
+{% endblock %}

@@ -1,0 +1,73 @@
+{%  extends 'correspondence/main_template.html'  %}
+{% block content %}
+{% load crispy_forms_tags %}
+
+
+<div class="card mb-4">
+    <div class="card-header">Búsqueda de remitentes</div>
+    <div class="card-body">
+      <form action="{% url 'correspondence:search_names'%}" method="post">
+        {{ form | crispy  }}
+        {% csrf_token %}
+        <input type="submit" name="search" value="Buscar" class="btn btn-success lift">
+    </form>
+    </div>
+</div>
+<!--
+<div class="alert alert-success mt-5">
+  <h2>Remitentes</h2>
+</div>
+-->
+{% if list %}
+<div class="card mb-4">
+  <div class="card-header">Resultado</div>
+  <div class="card-body">
+    <div class="datatable">
+      <table class="table table-bordered table-hover" id="radicateListTable" width="100%" cellspacing='0'>
+        <thead>
+          <tr>
+            <th scope="col">Nombres</th>
+            <th scope="col">Email</th>
+            <th scope="col">Dirección</th>
+            <th scope="col">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for person in list %}
+            <tr>
+              <td>{{ person.name }}</td>
+              <td>{{ person.email }}</td>
+              <td>{{ person.address }}</td>
+              <td><a href="{% url 'correspondence:create_radicate' person=person.pk %}" class="btn btn-datatable btn-icon btn-transparent-dark"><i data-feather="play-circle"></i></a>Radicar</td>
+            </tr>
+          {% endfor %}
+        </tr>
+        </tbody>
+      </table>
+    </div>
+    </div>
+  </div>
+{% else %}
+  {% if person_form %}
+  <div class="alert alert-primary alert-icon mb-3 mt-3" role="alert">
+    <div class="alert-icon-aside"><i data-feather="alert-triangle"></i></div>
+        <div class="alert-icon-content">
+            <h5 class="alert-heading">Aviso</h5>
+            Estimado usuario, la persona que esta buscando no ha sido encontrada, por favor ingrese los datos
+            a continuación para realizar la creación
+        </div>
+</div>
+<div class="card mb-4">
+  <div class="card-header">Persona</div>
+  <div class="card-body">
+    <form action="{% url 'correspondence:create_person'%}" method="post">
+      {{ person_form | crispy  }}
+      {% csrf_token %}
+      <input type="submit" name="search" value="Crear" class="btn btn-primary lift">
+    </form>
+
+  </div>
+  </div>
+    {% endif %}
+{% endif  %}
+{% endblock %}

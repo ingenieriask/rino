@@ -1,0 +1,89 @@
+{% extends 'correspondence/main_template.html' %}
+{% block content %}
+<div class="card mb-4">
+  <div class="card-body">
+    <form action="{% url 'correspondence:search_by_content' %}" method="POST">
+      {% csrf_token %}
+      {% load crispy_forms_tags %}
+          {{form | crispy}}
+      <button type="submit" name="button" class="btn btn-success" >Buscar</button>
+    </form>
+  </div>
+</div>
+
+{% if results %}
+<div class="card mb-4">
+    <div class="card-header">Resultados</div>
+    <div class="card-body">
+      <div class="datatable">
+        <table class="table compact" id="resultsSearchTable" width="100%" cellspacing='0' >
+          <thead>
+            <tr>
+              <th>score</th>
+              <th>Nombre</th>
+              <th>Fecha de creación</th>
+              <th>Tipo de archivo</th>
+              <th>Tamaño</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tfoot>
+            <th>score</th>
+            <th>Nombre</th>
+            <th>Fecha de creación</th>
+            <th>Tipo de archivo</th>
+            <th>Tamaño</th>
+            <th>Acciones</th>
+          </tfoot>
+          <tbody>
+            {% for result in results %}
+            <tr>
+              <td>{{result.entry.search.score}}</td>
+              <td>{{result.entry.name}}</td>
+              <td>{{result.entry.createdAt}}</td>
+              <td>{{result.entry.content.mimeTypeName}}</td>
+              <td>{{result.entry.content.sizeInBytes | filesizeformat}}</td>
+              <td><a href="{% url 'correspondence:detail_radicate_cmis' cmis_id=result.entry.id %}" class="btn btn-datatable btn-icon btn-transparent-dark"><i data-feather="eye"></i></a>Ver</td>
+            </tr>
+            {%  endfor  %}
+          </tbody>
+        </table>
+        </div>
+    </div>
+</div>
+
+  {% elif term %}
+
+  <div class="card mb-4">
+      <div class="card-body">
+          <div class="alert alert-warning alert-icon" role="alert">
+              <div class="alert-icon-aside">
+                  <i data-feather="alert-triangle"></i>
+              </div>
+              <div class="alert-icon-content">
+                  <h6 class="alert-heading">Alerta</h6>
+                  No se ha encontrado el termino "{{term}}" por revise la escritura
+              </div>
+          </div>
+        </div>
+  </div>
+
+  {% endif %}
+
+{% if error %}
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="alert alert-danger alert-icon" role="alert">
+            <div class="alert-icon-aside">
+                <i data-feather="alert-triangle"></i>
+            </div>
+            <div class="alert-icon-content">
+                <h6 class="alert-heading">Error</h6>
+                {{error}}
+            </div>
+        </div>
+      </div>
+</div>
+{% endif %}
+
+{% endblock %}

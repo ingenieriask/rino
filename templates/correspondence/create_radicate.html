@@ -1,0 +1,15 @@
+{% extends 'correspondence/main_template.html' %}
+<!-- BLOCK Content -->
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header">Entrada de correspondencia</div>
+    <div class="card-body">
+      <form action="{% url 'correspondence:create_radicate' person=person.id %}" method="post" enctype="multipart/form-data">
+        {% load crispy_forms_tags %}
+        {{ form | crispy }}
+        {% csrf_token %}
+        <input type="submit" class="btn btn-success btn-lg btn-block lift" name="Radicar" value="Radicar">
+      </form>
+    </div>
+</div>
+{% endblock %}
