@@ -5,3 +5,5 @@ db.sqlite3
 .DS_Store
 .env
 __pycache__/
+correspondence/migrations/
+rino/__pycache__/
