@@ -1,0 +1,7 @@
+media/
+output.docx
+response.pdf
+db.sqlite3
+.DS_Store
+.env
+__pycache__/
