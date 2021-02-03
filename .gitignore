@@ -6,5 +6,6 @@ db.sqlite3
 .env
 __pycache__/
 correspondence/migrations/
-rino/__pycache__/
-correspondence/__pycache__/
+rino/__pycache__/*
+correspondence/__pycache__/*
+rino/settings.py
