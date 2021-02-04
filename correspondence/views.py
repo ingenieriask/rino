@@ -109,7 +109,7 @@ def search_by_content(request):
             headers = {'Content-Type': 'application/json'}
             try:
                 response = requests.post(
-                    'http://192.168.1.109:8080/alfresco/api/-default-/public/search/versions/1/search',
+                    'http://localhost:8080/alfresco/api/-default-/public/search/versions/1/search',
                     json = { 'query':{'query':term}},
                     auth = HTTPBasicAuth('admin', 'Mamacall3128!!..'),
                     headers=headers
@@ -177,7 +177,7 @@ def create_radicate(request,person):
 
             print(os.path.join(BASE_DIR,instance.document_file.path))
 
-            url = "http://192.168.1.109:8080/alfresco/service/api/upload"
+            url = "http://localhost:8080/alfresco/service/api/upload"
             auth = ("admin", "Mamacall3128!!..")
             files = {"filedata": open(os.path.join(BASE_DIR,radicate.document_file.path), "rb")}
             data = {"siteid": "swsdp", "containerid": "documentLibrary"}
@@ -273,7 +273,7 @@ def proyect_answer(request,pk):
         files = {'files':open(os.path.join(BASE_DIR,'media/output.docx'),'rb')}
 
         response = requests.post(
-            'http://192.168.1.109:3000/convert/office',
+            'http://localhost:3000/convert/office',
             files=files
         )
 
