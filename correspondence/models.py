@@ -24,7 +24,7 @@ class Office(models.Model):
 # UserProfileInfo, has one user for extend the basic user info
 class UserProfileInfo(models.Model):
 
-    user = models.OneToOneField(User,on_delete=models.CASCADE)
+    user = models.OneToOneField(User,on_delete=models.CASCADE,related_name='user_info')
     office = models.ForeignKey('Office',on_delete=models.CASCADE,related_name='user_profiles',default=False)
     def __str__(self):
         return self.user.username
@@ -106,6 +106,6 @@ class Radicate(models.Model):
         self.save()
 
 def get_first_name(self):
-    return self.first_name+' '+self.last_name
+    return self.first_name+' '+self.last_name+' / '+self.user_info.office.name
 
 User.add_to_class("__str__", get_first_name)
