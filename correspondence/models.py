@@ -99,13 +99,13 @@ class Radicate(models.Model):
         return str(self.number)
 
     def get_absolute_url(self):
-        return reverse('correspondence:list_radicate')
+        return reverse('correspondence:detail_radicate',args=[str(self.id)])
 
     def set_cmis_id(self,cmis_id):
         self.cmis_id = cmis_id
         self.save()
 
 def get_first_name(self):
-    return self.first_name+' '+self.last_name+' / '+self.user_info.office.name
+     return self.first_name+' '+self.last_name+' / '+self.user_info.office.name
 
 User.add_to_class("__str__", get_first_name)

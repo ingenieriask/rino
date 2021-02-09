@@ -1,13 +1,12 @@
 $(document).ready(function(){
 
-    $("#id_item" ).autocomplete({
-      source: "/correspondence/autocomplete",
-    });
+    // $("#id_item" ).autocomplete({
+    //   source: "/correspondence/autocomplete",
+    // });
 
     $('#id_current_user').selectpicker();
     $('#id_person').selectpicker();
-    // $('#id_person').selectpicker('hide');
-    // $('#id_person').selectpicker('refresh');
+    
     $("#id_document_file").fileinput({
         theme: 'fas',
         allowedFileExtensions: ['pdf'],

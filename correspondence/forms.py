@@ -22,18 +22,17 @@ class RadicateForm(forms.ModelForm):
 
     class Meta:
         model = Radicate
-        fields = ['subject','person','type','reception_mode','document_file']
+        fields = ['subject','type','reception_mode','document_file']
         labels = {'subject':'Asunto','person':'Remitente/Destinatario','type':'Tipo','reception_mode':'Medio de recepción','document_file':'Documento'}
         widgets = {
                 'type' :forms.Select(attrs={'class': 'selectpicker'}),
-                'person' :forms.Select(attrs={'class': 'selectpicker','data-live-search':'true'}),
                 'reception_mode' :forms.Select(attrs={'class': 'selectpicker'}),
                 'subject': forms.TextInput()
         }
 
 
 class SearchForm(forms.Form):
-    item = forms.CharField(label='Nombres',help_text='Nombres a buscar')
+    item = forms.CharField(label='Palabra clave',help_text='Datos a buscar')
 
 
 class SearchContentForm(forms.Form):

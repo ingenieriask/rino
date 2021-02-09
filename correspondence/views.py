@@ -13,6 +13,7 @@ from django.views.generic.edit import CreateView
 from django.views.generic.list import ListView
 from django.views.generic.edit import UpdateView
 from django.views.decorators.clickjacking import xframe_options_exempt
+from django.contrib.postgres.search import SearchVector, TrigramSimilarity
 
 import requests
 import json
@@ -109,7 +110,7 @@ def search_by_content(request):
             headers = {'Content-Type': 'application/json'}
             try:
                 response = requests.post(
-                    'http://localhost:8080/alfresco/api/-default-/public/search/versions/1/search',
+                    'http://192.168.1.109:8080/alfresco/api/-default-/public/search/versions/1/search',
                     json = { 'query':{'query':term}},
                     auth = HTTPBasicAuth('admin', 'Mamacall3128!!..'),
                     headers=headers
@@ -127,14 +128,16 @@ def search_by_content(request):
 
 @login_required
 def search_names(request):
+
     if request.method == 'POST':
         form=SearchForm(request.POST)
         if form.is_valid():
-            qs = Person.objects.filter(name__icontains=request.POST.get("item"))
+            item = form.cleaned_data['item']
+            qs = Person.objects.annotate(search=SearchVector('document_number','email','name','address'),).filter(search=item)
             if not qs.count():
-                person_form = PersonForm(initial={'name':request.POST.get("item")})
+                 person_form = PersonForm(initial={'name':request.POST.get("item")})
             else:
-                person_form = PersonForm()
+                 person_form = PersonForm()
     else:
         form = SearchForm()
         qs = None
@@ -172,12 +175,13 @@ def create_radicate(request,person):
             instance.number = now.strftime("%Y%m%d%H%M%S")
             instance.creator = request.user
             instance.current_user = request.user
+            instance.person = person
             radicate = form.save()
 
 
             print(os.path.join(BASE_DIR,instance.document_file.path))
 
-            url = "http://localhost:8080/alfresco/service/api/upload"
+            url = "http://192.168.1.109:8080/alfresco/service/api/upload"
             auth = ("admin", "Mamacall3128!!..")
             files = {"filedata": open(os.path.join(BASE_DIR,radicate.document_file.path), "rb")}
             data = {"siteid": "swsdp", "containerid": "documentLibrary"}
@@ -273,7 +277,7 @@ def proyect_answer(request,pk):
         files = {'files':open(os.path.join(BASE_DIR,'media/output.docx'),'rb')}
 
         response = requests.post(
-            'http://localhost:3000/convert/office',
+            'http://192.168.1.109:3000/convert/office',
             files=files
         )
 
