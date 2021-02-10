@@ -29,20 +29,28 @@ class UserProfileInfo(models.Model):
     def __str__(self):
         return self.user.username
 
-
-class State(models.Model):
-    state_name = models.CharField(max_length=128)
+class Country(models.Model):
+    name = models.CharField(max_length=128)
 
     def __str__(self):
-        return self.state_name
+        return self.name
+
+
+class State(models.Model):
+    country = models.ForeignKey('Country',on_delete=models.CASCADE,related_name='states',default=False)
+    name = models.CharField(max_length=128)
+
+    def __str__(self):
+        return self.name
 
 
 class City(models.Model):
-    city_name = models.CharField(max_length=128)
+    name = models.CharField(max_length=128)
     state = models.ForeignKey('State',on_delete=models.CASCADE,related_name='cities')
+    city_id = models.IntegerField(default=False)
 
     def __str__(self):
-        return self.city_name+' / '+self.state.state_name
+        return self.name+' / '+self.state.name
 
 
 # Generic person class, attributes for senders and recievers

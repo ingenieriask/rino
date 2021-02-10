@@ -2,6 +2,7 @@ from django.shortcuts import render
 from correspondence.forms import RadicateForm , SearchForm, UserForm,  UserProfileInfoForm, PersonForm, SearchContentForm, ChangeCurrentUserForm
 from datetime import datetime
 from django.utils.timezone import get_current_timezone
+from django.conf import settings
 from correspondence.models import Radicate, Person
 from django.shortcuts import get_list_or_404, get_object_or_404, render
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
@@ -14,6 +15,7 @@ from django.views.generic.list import ListView
 from django.views.generic.edit import UpdateView
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.contrib.postgres.search import SearchVector, TrigramSimilarity
+
 
 import requests
 import json
@@ -110,9 +112,9 @@ def search_by_content(request):
             headers = {'Content-Type': 'application/json'}
             try:
                 response = requests.post(
-                    'http://192.168.1.109:8080/alfresco/api/-default-/public/search/versions/1/search',
+                    settings.ECM_SEARCH_URL,
                     json = { 'query':{'query':term}},
-                    auth = HTTPBasicAuth('admin', 'Mamacall3128!!..'),
+                    auth = HTTPBasicAuth(settings.ECM_USER, settings.ECM_PASSWORD),
                     headers=headers
                 )
                 results=response.json()['list']['entries']
@@ -181,8 +183,8 @@ def create_radicate(request,person):
 
             print(os.path.join(BASE_DIR,instance.document_file.path))
 
-            url = "http://192.168.1.109:8080/alfresco/service/api/upload"
-            auth = ("admin", "Mamacall3128!!..")
+            url = settings.ECM_UPLOAD_URL
+            auth = (settings.ECM_USER, settings.ECM_PASSWORD)
             files = {"filedata": open(os.path.join(BASE_DIR,radicate.document_file.path), "rb")}
             data = {"siteid": "swsdp", "containerid": "documentLibrary"}
 
@@ -277,7 +279,7 @@ def proyect_answer(request,pk):
         files = {'files':open(os.path.join(BASE_DIR,'media/output.docx'),'rb')}
 
         response = requests.post(
-            'http://192.168.1.109:3000/convert/office',
+            settings.CONVERT_URL,
             files=files
         )
 

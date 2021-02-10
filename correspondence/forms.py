@@ -52,7 +52,7 @@ class PersonForm(forms.ModelForm):
 
         widgets = {
             'document_type':forms.Select(attrs={'class': 'selectpicker'}),
-            'city':forms.Select(attrs={'class': 'selectpicker'})
+            'city':forms.Select(attrs={'class': 'selectpicker','data-live-search':'true','data-size':'7'})
         }
 
 
