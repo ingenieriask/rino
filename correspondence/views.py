@@ -207,6 +207,9 @@ def create_radicate(request,person):
             return render(request,'correspondence/create_radicate.html',context={'form':form,'person':person})
     else:
         form = RadicateForm(initial={'person':person.id})
+        form.fields['address'].choices = person.get_addresses()
+        form.fields['address'].initial = [1]
+        print(person.get_addresses())
         form.person = person
 
     return render(request,'correspondence/create_radicate.html',context={'form':form,'person':person})
@@ -301,6 +304,10 @@ class PersonCreateView(CreateView):
 
 class PersonDetailView(DetailView):
     model = Person
+
+class PersonUpdateView(UpdateView):
+    model = Person
+    form_class = PersonForm
 
     # Charts
 def charts(request):

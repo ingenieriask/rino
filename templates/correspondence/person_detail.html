@@ -8,9 +8,10 @@
       <p><b>Número de documento:</b> {{ person.document_number }}</p>
       <p><b>Email:</b> {{ person.email }}</p>
       <p><b>Nombre:</b> {{ person.name }}</p>
-      <p><b>City:</b> {{ person.city.city_name }}</p>
+      <p><b>Ciudad:</b> {{ person.city }}</p>
       <p><b>Dirección:</b> {{ person.address }}</p>
-      <a href="{% url 'correspondence:create_radicate' person=person.pk %}" class="btn btn-success btn-lg btn-block lift">Radicar con estos datos</a>
+      <a href="{% url 'correspondence:create_radicate' person=person.pk %}" class="btn btn-success lift">Radicar</a>
+      <a href="{% url 'correspondence:edit_person' pk=person.pk %}" class="btn btn-primary lift">Editar</a>
     </div>
 </div>
 {% endblock %}

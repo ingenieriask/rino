@@ -33,7 +33,14 @@
               <td>{{ person.name }}</td>
               <td>{{ person.email }}</td>
               <td>{{ person.address }}</td>
-              <td><a href="{% url 'correspondence:create_radicate' person=person.pk %}" class="btn btn-datatable btn-icon btn-transparent-dark"><i data-feather="play-circle"></i></a>Radicar</td>
+              <td>
+                <a href="{% url 'correspondence:create_radicate' person=person.pk %}" class="btn btn-datatable btn-icon btn-transparent-dark">
+                  <i data-feather="play-circle"></i>
+                </a>
+                <a href="{% url 'correspondence:edit_person' pk=person.pk %}">
+                  <i data-feather="edit-2" ></i>
+                </a>
+              </td>
             </tr>
           {% endfor %}
         </tr>

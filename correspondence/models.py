@@ -76,6 +76,15 @@ class Person(models.Model):
     def get_absolute_url(self):
         return reverse('correspondence:detail_person',args=[str(self.id)])
 
+    def get_addresses(self):
+        address_list = []
+        address_list.append((1,self.address))
+        if hasattr(self.parent, 'address'):
+            address_list.append((2,self.parent.address))
+
+        return address_list
+
+
 class Radicate(models.Model):
 
     RADICATE_TYPES = [

@@ -20,6 +20,8 @@ class UserProfileInfoForm(forms.ModelForm):
 
 class RadicateForm(forms.ModelForm):
 
+    address = forms.ChoiceField(label='Dirección',help_text='Dirección',widget=forms.Select(attrs={'class':'selectpicker'}))
+
     class Meta:
         model = Radicate
         fields = ['subject','type','reception_mode','document_file']
@@ -40,6 +42,7 @@ class SearchContentForm(forms.Form):
 
 
 class PersonForm(forms.ModelForm):
+
     class Meta:
         model = Person
 
