@@ -12,9 +12,9 @@ from django.urls import reverse
 class Office(models.Model):
     name = models.CharField(max_length=256)
     abbr = models.CharField(max_length=10)
-    parent = models.ForeignKey('self',on_delete=models.CASCADE,null=True,blank=True)
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
     date_created = models.DateField(auto_now=True)
-    date_closed = models.DateTimeField(auto_now=False,null=True,blank=True)
+    date_closed = models.DateTimeField(auto_now=False, null=True, blank=True)
     is_active = models.BooleanField()
 
     def __str__(self):
@@ -24,8 +24,8 @@ class Office(models.Model):
 # UserProfileInfo, has one user for extend the basic user info
 class UserProfileInfo(models.Model):
 
-    user = models.OneToOneField(User,on_delete=models.CASCADE,related_name='user_info')
-    office = models.ForeignKey('Office',on_delete=models.CASCADE,related_name='user_profiles',default=False)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='user_info')
+    office = models.ForeignKey('Office', on_delete=models.CASCADE, related_name='user_profiles', default=False)
     def __str__(self):
         return self.user.username
 
