@@ -15,7 +15,7 @@ class RadicatePagination(LimitOffsetPagination):
 class RadicateList(ListAPIView):
     queryset = Radicate.objects.all()
     serializer_class = RadicateSerializer
-    filter_backends = (DjangoFilterBackend,SearchFilter)
+    filter_backends = (DjangoFilterBackend, SearchFilter)
     filter_fields = ('id',)
-    search_fields = ('id','subject','type')
+    search_fields = ('id', 'subject', 'type')
     pagination_class = RadicatePagination

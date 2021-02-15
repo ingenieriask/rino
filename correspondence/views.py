@@ -21,6 +21,12 @@ import requests
 import json
 import os
 from docx import Document
+import logging
+
+from pinax.eventlog.models import log, Log
+
+logger = logging.getLogger(__name__)
+
 
 from requests.auth import HTTPBasicAuth
 
@@ -47,7 +53,7 @@ def user_login(request):
             else:
                 return HttpResponse("Cuenta inactiva")
         else:
-            print("Login failed..")
+            logger.warning("Login failed..")
             print("username: {} password: {} ".format(username,password))
             message = "Ingreso inválido"
             return render(request,'correspondence/login.html',{'message':message})
@@ -83,7 +89,7 @@ def register(request):
             message = "El usuario ha sido creado con éxito"
             user_form = UserForm()
         else:
-            print(user_form.errors,user_profile_form.errors)
+            logger.error(user_form.errors,user_profile_form.errors)
     else:
         user_form = UserForm()
         user_profile_form = UserProfileInfoForm()
@@ -118,7 +124,7 @@ def search_by_content(request):
                     headers=headers
                 )
                 results=response.json()['list']['entries']
-                print(results)
+                logger.info(results)
             except:
                 error = "Ha occurrido un error al realizar la búsqueda, por favor intente más tarde"
     else:
@@ -181,7 +187,14 @@ def create_radicate(request,person):
             radicate = form.save()
 
 
-            print(os.path.join(BASE_DIR,instance.document_file.path))
+            log(
+                user=request.user,
+                action="RADICATE_CREATED",
+                obj=radicate,
+                extra={
+                    "number": radicate.number
+                }
+            )
 
             url = settings.ECM_UPLOAD_URL
             auth = (settings.ECM_USER, settings.ECM_PASSWORD)
@@ -190,26 +203,20 @@ def create_radicate(request,person):
 
             try:
                 r = requests.post(url, files=files, data=data, auth=auth)
-                print(r.status_code)
                 json_response =(json.loads(r.text))
-                print(json_response['nodeRef'][24:])
                 radicate.set_cmis_id(json_response['nodeRef'][24:])
 
             except Exception as Error:
 
-                print("Ha ocurrido un error al guardar el archivo")
-                print(Error)
+                logger.error(Error)
 
             url = reverse('correspondence:detail_radicate', kwargs={'pk': radicate.pk})
             return HttpResponseRedirect(url)
         else:
-            print("Invalid create radicate form")
+            logger.error("Invalid create radicate form")
             return render(request,'correspondence/create_radicate.html',context={'form':form,'person':person})
     else:
         form = RadicateForm(initial={'person':person.id})
-        # form.fields['address'].choices = person.get_addresses()
-        # form.fields['address'].initial = [1]
-        # print(person.get_addresses())
         form.person = person
 
     return render(request,'correspondence/create_radicate.html',context={'form':form,'person':person})
@@ -240,6 +247,11 @@ def edit_radicate(request,id):
 class RadicateDetailView(DetailView):
     model = Radicate
 
+    def get_context_data(self, **kwargs):
+        context = super(RadicateDetailView, self).get_context_data(**kwargs)
+        context['log'] = Log.objects.get(object_id=self.kwargs['pk'])
+        return context
+
 
 def detail_radicate_cmis(request,cmis_id):
     radicate = get_object_or_404(Radicate,cmis_id=cmis_id)
@@ -254,10 +266,7 @@ def proyect_answer(request,pk):
 
     if request.method == 'POST':
         BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
         doc=Document(os.path.join(BASE_DIR,'media/template.docx'))
-        print(os.path.join(BASE_DIR,'media/template.docx'))
-
 
         Dictionary = {
             "*RAD_N*":datetime.now().strftime("%Y%m%d%H%M%S"),

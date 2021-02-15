@@ -22,33 +22,23 @@
 
   <div class="col-xxl-6 col-xl-12 mb-6">
     <div class="card mb-4">
-    <div class="card-header">Historico</div>
+    <div class="card-header">Histórico</div>
     <div class="card-body">
       <div class="timeline timeline-xs">
         <!-- Timeline Item 1-->
         <div class="timeline-item">
             <div class="timeline-item-marker">
-                <div class="timeline-item-marker-text">27 min</div>
+                <div class="timeline-item-marker-text">{{log.timestamp | date:"d M" }}</div>
                 <div class="timeline-item-marker-indicator bg-green"></div>
             </div>
             <div class="timeline-item-content">
-                Radicado
-                <a class="font-weight-bold text-dark" href="#!">{{radicate.number}}</a>
-                ha sido ingresado correctamente
+                 El radicado
+                {{log.extra.number}}
+                ha sido generado por el usuario: ( {{log.user}} )
+                el {{log.timestamp | date:"D d M Y P "  }}
             </div>
         </div>
-          <!-- Timeline Item 2-->
-        <div class="timeline-item">
-            <div class="timeline-item-marker">
-                <div class="timeline-item-marker-text">58 min</div>
-                <div class="timeline-item-marker-indicator bg-blue"></div>
-            </div>
-            <div class="timeline-item-content">
-                El radicado
-                <a class="font-weight-bold text-dark" href="#!">{{radicate.number}}</a>
-                esta disponible para la búsqueda.
-            </div>
-        </div>
+
      </div>
     </div>
   </div>
