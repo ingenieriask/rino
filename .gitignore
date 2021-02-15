@@ -1,4 +1,4 @@
-media/
+media/*
 output.docx
 response.pdf
 db.sqlite3
@@ -6,6 +6,6 @@ db.sqlite3
 .env
 __pycache__/
 correspondence/migrations/
-rino/__pycache__/*
-correspondence/__pycache__/*
+rino/__pycache__/*.*
+correspondence/__pycache__/*.pyc
 rino/settings.py
