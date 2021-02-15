@@ -110,6 +110,9 @@ class Radicate(models.Model):
     reception_mode = models.TextField(max_length=10,choices=RECEPTION_MODES,default='PR')
     document_file = models.FileField(upload_to="uploads/",blank=False,null=False)
     cmis_id = models.TextField(max_length=128,null=True)
+    use_parent_address = models.BooleanField(default=False)
+
+
 
 
     def __str__(self):

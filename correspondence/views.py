@@ -135,7 +135,7 @@ def search_names(request):
         form=SearchForm(request.POST)
         if form.is_valid():
             item = form.cleaned_data['item']
-            qs = Person.objects.annotate(search=SearchVector('document_number','email','name','address'),).filter(search=item)
+            qs = Person.objects.annotate(search=SearchVector('document_number','email','name','address','parent__name'),).filter(search=item)
             if not qs.count():
                  person_form = PersonForm(initial={'name':request.POST.get("item")})
             else:
@@ -207,9 +207,9 @@ def create_radicate(request,person):
             return render(request,'correspondence/create_radicate.html',context={'form':form,'person':person})
     else:
         form = RadicateForm(initial={'person':person.id})
-        form.fields['address'].choices = person.get_addresses()
-        form.fields['address'].initial = [1]
-        print(person.get_addresses())
+        # form.fields['address'].choices = person.get_addresses()
+        # form.fields['address'].initial = [1]
+        # print(person.get_addresses())
         form.person = person
 
     return render(request,'correspondence/create_radicate.html',context={'form':form,'person':person})

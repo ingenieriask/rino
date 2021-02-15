@@ -20,12 +20,11 @@ class UserProfileInfoForm(forms.ModelForm):
 
 class RadicateForm(forms.ModelForm):
 
-    address = forms.ChoiceField(label='Dirección',help_text='Dirección',widget=forms.Select(attrs={'class':'selectpicker'}))
 
     class Meta:
         model = Radicate
-        fields = ['subject','type','reception_mode','document_file']
-        labels = {'subject':'Asunto','person':'Remitente/Destinatario','type':'Tipo','reception_mode':'Medio de recepción','document_file':'Documento'}
+        fields = ['use_parent_address','subject','type','reception_mode','document_file']
+        labels = {'use_parent_address':'¿Usar dirección de la organización?','subject':'Asunto','person':'Remitente/Destinatario','type':'Tipo','reception_mode':'Medio de recepción','document_file':'Documento'}
         widgets = {
                 'type' :forms.Select(attrs={'class': 'selectpicker'}),
                 'reception_mode' :forms.Select(attrs={'class': 'selectpicker'}),
@@ -50,7 +49,7 @@ class PersonForm(forms.ModelForm):
         labels = { 'document_type':'Tipo de documento',
         'document_number':'Número de documento',
         'name':'Nombres','email':'Correo electrónico',
-        'city':'Ciudad','address':'Dirección',
+        'city':'Ciudad / Municipio','address':'Dirección',
         'parent':'Entidad'}
 
         widgets = {
@@ -68,7 +67,7 @@ class ChangeCurrentUserForm(forms.ModelForm):
     class Meta:
         model = Radicate
         fields = ['current_user']
-        labels = {'current_user':'Usuario actual'}
+        labels = {'current_user':'Usuario'}
         widgets = {
             'current_user':forms.Select(attrs={'class':'selectpicker','data-live-search':'true'})
          }
