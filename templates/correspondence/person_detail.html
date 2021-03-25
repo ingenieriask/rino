@@ -10,8 +10,11 @@
       <p><b>Nombre:</b> {{ person.name }}</p>
       <p><b>Ciudad:</b> {{ person.city }}</p>
       <p><b>Dirección:</b> {{ person.address }}</p>
-      <a href="{% url 'correspondence:create_radicate' person=person.pk %}" class="btn btn-success lift">Radicar</a>
-      <a href="{% url 'correspondence:edit_person' pk=person.pk %}" class="btn btn-primary lift">Editar</a>
+
+    </div>
+    <div class="card-footer">
+        <a href="{% url 'correspondence:create_radicate' person=person.pk %}" class="btn btn-success lift">Radicar</a>
+        <a href="{% url 'correspondence:edit_person' pk=person.pk %}" class="btn btn-primary lift">Editar</a>
     </div>
 </div>
 {% endblock %}

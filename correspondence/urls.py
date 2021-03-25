@@ -22,7 +22,6 @@ urlpatterns = [
     path('person/<int:pk>/', views.PersonDetailView.as_view(), name='detail_person'),
     path('edit_person/<int:pk>/', views.PersonUpdateView.as_view(), name='edit_person'),
     path('register/', views.register, name='register'),
-    path('user_login/', views.user_login, name='user_login'),
     path('charts/', views.charts, name='charts'),
-    path('proyect_answer/<int:pk>/', views.proyect_answer, name='proyect_answer'),
+    path('project_answer/<int:pk>/', views.project_answer, name='project_answer'),
 ]

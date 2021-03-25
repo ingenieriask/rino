@@ -1,5 +1,7 @@
+from typing import Dict
+
 from django.shortcuts import render
-from correspondence.forms import RadicateForm , SearchForm, UserForm,  UserProfileInfoForm, PersonForm, SearchContentForm, ChangeCurrentUserForm
+from correspondence.forms import RadicateForm , SearchForm, UserForm,  UserProfileInfoForm, PersonForm, SearchContentForm, ChangeCurrentUserForm ,LoginForm
 from datetime import datetime
 from django.utils.timezone import get_current_timezone
 from django.conf import settings
@@ -14,8 +16,9 @@ from django.views.generic.edit import CreateView
 from django.views.generic.list import ListView
 from django.views.generic.edit import UpdateView
 from django.views.decorators.clickjacking import xframe_options_exempt
-from django.contrib.postgres.search import SearchVector, TrigramSimilarity
+from django.contrib.postgres.search import SearchVector, TrigramSimilarity, SearchQuery, SearchRank, SearchHeadline
 
+from django.contrib import messages
 
 import requests
 import json
@@ -24,7 +27,6 @@ from docx import Document
 import logging
 
 from pinax.eventlog.models import log, Log
-
 logger = logging.getLogger(__name__)
 
 
@@ -35,31 +37,6 @@ from requests.auth import HTTPBasicAuth
 
 def index(request):
     return render(request,'correspondence/index.html',{})
-
-
-# LOGIN / LOG OUT  views
-def user_login(request):
-
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-
-        user = authenticate(username=username,password=password)
-
-        if user:
-            if user.is_active:
-                login(request,user)
-                return HttpResponseRedirect(reverse('correspondence:list_radicate'))
-            else:
-                return HttpResponse("Cuenta inactiva")
-        else:
-            logger.warning("Login failed..")
-            print("username: {} password: {} ".format(username,password))
-            message = "Ingreso inválido"
-            return render(request,'correspondence/login.html',{'message':message})
-
-    else:
-        return render(request,'correspondence/login.html',{})
 
 
 
@@ -107,33 +84,87 @@ def user_logout(request):
 
 @login_required
 def search_by_content(request):
+
     term = ''
-    results = None
+    results = []
     response = None
     error = None
+    cmis_id_list = []
+    radicate_list = []
+    search_results = {}
+    qs = None
+
     if request.method == 'POST':
         form = SearchContentForm(data=request.POST)
-        term = request.POST.get("term")
-        if term != None:
-            headers = {'Content-Type': 'application/json'}
+        if form.is_valid():
+            cleaned_data = form.cleaned_data
+            term = cleaned_data['term']
+            headers: Dict[str, str] = {'Content-Type': 'application/json'}
             try:
                 response = requests.post(
                     settings.ECM_SEARCH_URL,
-                    json = { 'query':{'query':term}},
+                    json =dict(query=dict(query=term),
+                            highlight=dict(
+                            mergeContiguous=True, fragmentSize=150,
+                            usePhraseHighlighter=True,
+                            fields=[
+                                dict(field="name", prefix="( ", postfix=" )"),
+                                dict(field="content", prefix="( ", postfix=" )")
+                            ])),
                     auth = HTTPBasicAuth(settings.ECM_USER, settings.ECM_PASSWORD),
                     headers=headers
                 )
-                results=response.json()['list']['entries']
-                logger.info(results)
-            except:
-                error = "Ha occurrido un error al realizar la búsqueda, por favor intente más tarde"
+
+                # list of responses from ECM
+                entries = response.json()['list']['entries']
+                # list of cmis id's from response
+                cmis_id_list=[ data['entry']['id'] for data in entries ]
+                # list of radicates with the cmis id's
+                radicate_list = Radicate.objects.filter(cmis_id__in=cmis_id_list).distinct()
+                # list of cmis id's in efect in the radicates .
+                cmis_filtered_ids = [ radicate.cmis_id for radicate in radicate_list ]
+
+
+                # We made a dictionary with the results for send its to the template
+                # first we add the search of the json part from the response
+                for entry in entries:
+                    if entry['entry']['id'] in cmis_filtered_ids:
+                        search_results[entry['entry']['id']]={"search":entry['entry']['search']}
+
+                # second we add the radicates to the dictionary with the cmis_id as key
+                for radi in radicate_list:
+                   search_results[radi.cmis_id]['radicate']=radi
+
+
+                if radicate_list.count():
+                   logger.info(results)
+                else:
+                    messages.info(request,"No se ha encontrado el término en el contenido")
+
+            except Exception as inst:
+                messages.error(request, "Ha occurrido un error al realizar la búsqueda, por favor intente más tarde")
+
+
+            finally:
+                # finally we search for results in the database
+
+                vector = SearchVector('number', 'subject',  'person__name','person__document_number')
+                query = SearchQuery(term)
+
+                qs = Radicate.objects.annotate(rank=SearchRank(vector, query),
+                    headline=SearchHeadline('subject',query,start_sel='<u>',stop_sel='</u>',)).filter(rank__gte=0.06).order_by('-rank')
+
+                if not qs.count():
+                    messages.info(request, "La búsqueda en la base de datos no obtuvo resultados")
+
+
     else:
         form = SearchContentForm()
 
-    return render(request,'correspondence/content_search.html',context={'term':term,'results':results,'error':error,'form':form})
+    return render(request,'correspondence/content_search.html',context={'term':term,'results':search_results, 'db_results':qs ,'form':form})
+
 
 # Search by names
-
 @login_required
 def search_names(request):
 
@@ -143,9 +174,9 @@ def search_names(request):
             item = form.cleaned_data['item']
             qs = Person.objects.annotate(search=SearchVector('document_number','email','name','address','parent__name'),).filter(search=item)
             if not qs.count():
-                 person_form = PersonForm(initial={'name':request.POST.get("item")})
-            else:
-                 person_form = PersonForm()
+                messages.warning(request,"La búsqueda no obtuvo resultados")
+
+            person_form = PersonForm()
     else:
         form = SearchForm()
         qs = None
@@ -178,11 +209,12 @@ def create_radicate(request,person):
 
         if form.is_valid():
             instance = form.save(commit=False)
+            cleaned_data = form.cleaned_data
             form.document_file = request.FILES['document_file']
             now = datetime.now()
             instance.number = now.strftime("%Y%m%d%H%M%S")
-            instance.creator = request.user
-            instance.current_user = request.user
+            instance.creator = request.user.profile_user
+            instance.current_user = request.user.profile_user
             instance.person = person
             radicate = form.save()
 
@@ -199,7 +231,7 @@ def create_radicate(request,person):
             url = settings.ECM_UPLOAD_URL
             auth = (settings.ECM_USER, settings.ECM_PASSWORD)
             files = {"filedata": open(os.path.join(BASE_DIR,radicate.document_file.path), "rb")}
-            data = {"siteid": "swsdp", "containerid": "documentLibrary"}
+            data = {"siteid": "rino", "containerid": "files"}
 
             try:
                 r = requests.post(url, files=files, data=data, auth=auth)
@@ -209,7 +241,9 @@ def create_radicate(request,person):
             except Exception as Error:
 
                 logger.error(Error)
+                messages.error(request,"Ha ocurrido un error al guardar el archivo en el gestor de contenido")
 
+            messages.success(request,"El radicado se ha creado correctamente")
             url = reverse('correspondence:detail_radicate', kwargs={'pk': radicate.pk})
             return HttpResponseRedirect(url)
         else:
@@ -228,7 +262,7 @@ class RadicateList(ListView):
 
     def get_queryset(self):
         queryset = super(RadicateList, self).get_queryset()
-        queryset = queryset.filter(current_user=self.request.user)
+        queryset = queryset.filter(current_user=self.request.user.profile_user.pk)
         return queryset
 
 
@@ -249,16 +283,17 @@ class RadicateDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(RadicateDetailView, self).get_context_data(**kwargs)
-        context['log'] = Log.objects.get(object_id=self.kwargs['pk'])
+        context['logs'] = Log.objects.all().filter(object_id=self.kwargs['pk'])
         return context
 
 
 def detail_radicate_cmis(request,cmis_id):
     radicate = get_object_or_404(Radicate,cmis_id=cmis_id)
-    return render(request,'correspondence/radicate_detail.html',context={'radicate':radicate})
+    logs = Log.objects.all().filter(object_id=radicate.pk)
+    return render(request,'correspondence/radicate_detail.html',context={'radicate':radicate,'logs':logs})
 
 
-def proyect_answer(request,pk):
+def project_answer(request,pk):
     radicate = get_object_or_404(Radicate,id=pk)
     response_file = None
     answer = ''
@@ -278,7 +313,7 @@ def proyect_answer(request,pk):
             '*FECHA*':datetime.now().strftime("%Y/%m/%d %H:%M:%S"),
             '*ANEXO*':'Imágenes',
             "*TEXTO*":str(request.POST.get("answer")).replace("\n",""),
-            "*NOMBRES_REMITENTE*":str(radicate.current_user.first_name)+" "+str(radicate.current_user.last_name)
+            "*NOMBRES_REMITENTE*":str(radicate.current_user.user.first_name)+" "+str(radicate.current_user.user.last_name)
             }
 
         for i in Dictionary:
@@ -290,17 +325,22 @@ def proyect_answer(request,pk):
 
         files = {'files':open(os.path.join(BASE_DIR,'media/output.docx'),'rb')}
 
-        response = requests.post(
-            settings.CONVERT_URL,
-            files=files
-        )
+        try:
+            response = requests.post(
+                settings.CONVERT_URL,
+                files=files
+            )
+            with open(os.path.join(BASE_DIR, 'media/response.pdf'), 'wb') as f:
+                f.write(response.content)
+
+            response_file = 'media/response.pdf'
+            answer = str(request.POST.get("answer")).replace("\n", "")
 
 
-        with open(os.path.join(BASE_DIR,'media/response.pdf'),'wb') as f:
-            f.write(response.content)
+        except Exception as Error:
+            logger.error(Error)
+            messages.error(request, "Ha ocurrido un error al comunicarse con los servicios de conversión. Por favor informe al administrador del sistema")
 
-        response_file = 'media/response.pdf'
-        answer = str(request.POST.get("answer")).replace("\n","")
 
     return render(request,'correspondence/radicate_answer.html',{'radicate':radicate,'response_file':response_file,'answer':answer})
 
