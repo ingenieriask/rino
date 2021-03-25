@@ -1,73 +1,84 @@
 {% extends 'correspondence/main_template.html' %}
 
 {% block content %}
-
+    {%  if radicate.document_file %}
 <div class="row">
-  <div class="col-xxl-6 col-xl-12 mb-6">
-    <div class="card mb-4">
-        <div class="card-header">Detalle del radicado : {{radicate.number}}</div>
-        <div class="card-body">
-          <p><b>Consecutivo:</b> {{ radicate.pk }}</p>
-          <p><b>Asunto:</b> {{radicate.subject}}</p>
-          <p><b>Tipo:</b> {{radicate.type}}</p>
-          <p><b>Fecha:</b> {{radicate.date_radicated}}</p>
-          <p><b>Recepción:</b> {{radicate.reception_mode}}</p>
-          <p><b>Remitente:</b> {{radicate.person }}</p>
-          <p><b>Dirección:</b> {{radicate.person.address }} - {{ radicate.person.city }}</p>
-          <p><b>Usuario creador:</b> {{radicate.creator.first_name}} {{radicate.creator.last_name}}</p>
-          <p><b>Usuario actual:</b> {{radicate.current_user.first_name}} {{radicate.current_user.last_name}}</p>
+    <div class="col-xxl-9 col-xl-9 mb-9">
+        <div class="card mb-4">
+          <div class="card-header">
+               <button class="btn btn-dark btn-block">
+                   Documento
+               </button>
+          </div>
+            <div id="document">
+              <div class="card-body">
+                <div class="embed-responsive embed-responsive-16by9">
+                    <iframe class="embed-responsive-item" src="{{ radicate.document_file.url }}">
+                    </iframe>
+                </div>
+              </div>
+            </div>
         </div>
     </div>
-  </div>
-
-  <div class="col-xxl-6 col-xl-12 mb-6">
+    <div class="col-xxl-3 col-xl-3 mb-3">
     <div class="card mb-4">
-    <div class="card-header">Historico</div>
-    <div class="card-body">
-      <div class="timeline timeline-xs">
-        <!-- Timeline Item 1-->
-        <div class="timeline-item">
-            <div class="timeline-item-marker">
-                <div class="timeline-item-marker-text">27 min</div>
-                <div class="timeline-item-marker-indicator bg-green"></div>
-            </div>
-            <div class="timeline-item-content">
-                Radicado
-                <a class="font-weight-bold text-dark" href="#!">{{radicate.number}}</a>
-                ha sido ingresado correctamente
+        <div class="card-header">
+            <button class="btn btn-primary btn-block">
+                Detalle
+            </button>
+        </div>
+        <div id="detail">
+            <div class="card-body">
+                <span class="text-sm">
+                  <p><b>Número:</b> {{radicate.number}}</p>
+                  <p><b>Consecutivo:</b> {{ radicate.pk }}</p>
+                  <p><b>Asunto:</b> {{radicate.subject}}</p>
+                  <p><b>Tipo:</b> {{radicate.type}}</p>
+                  <p><b>Fecha:</b> {{radicate.date_radicated}}</p>
+                  <p><b>Recepción:</b> {{radicate.reception_mode}}</p>
+                  <p><b>Remitente:</b> {{radicate.person }}</p>
+                  <p><b>Dirección:</b> {{radicate.person.address }} - {{ radicate.person.city }}</p>
+                  <p><b>Usuario creador:</b> {{radicate.creator.user.first_name}} {{radicate.creator.user.last_name}}</p>
+                  <p><b>Usuario actual:</b> {{radicate.current_user.user.first_name}} {{radicate.current_user.user.last_name}}</p>
+                </span>
             </div>
         </div>
-          <!-- Timeline Item 2-->
-        <div class="timeline-item">
-            <div class="timeline-item-marker">
-                <div class="timeline-item-marker-text">58 min</div>
-                <div class="timeline-item-marker-indicator bg-blue"></div>
-            </div>
-            <div class="timeline-item-content">
-                El radicado
-                <a class="font-weight-bold text-dark" href="#!">{{radicate.number}}</a>
-                esta disponible para la búsqueda.
-            </div>
-        </div>
-     </div>
-    </div>
-  </div>
-  </div>
-</div>
-{%  if radicate.document_file %}
-<div class="card mb-4">
-  <div class="card-header">
-    Documento
-  </div>
-  <div class="card-body">
-    <div class="embed-responsive embed-responsive-16by9">
-        <iframe class="embed-responsive-item" src="{{ radicate.document_file.url }}">
-        </iframe>
     </div>
   </div>
 </div>
 {% endif %}
+<div class="row">
+  <div class="col-xxl-12 col-xl-12 mb-12">
+    <div class="card mb-4">
+    <div class="card-header">
+        <button class="btn btn-primary btn-block">
+            Histórico
+        </button>
+    </div>
+        <div id="history">
+            <div class="card-body">
+              <div class="timeline timeline-xs">
+              {% for log in logs %}
+                <div class="timeline-item">
+                    <div class="timeline-item-marker">
+                        <div class="timeline-item-marker-text">{{log.timestamp | date:"d M" }}</div>
+                        <div class="timeline-item-marker-indicator bg-green"></div>
+                    </div>
+                    <div class="timeline-item-content">
+                         El radicado
+                        {{log.extra.number}},
+                        {{log.extra.message}} ( {{log.user}} )
+                        el {{log.timestamp | date:"D d M Y P "  }}
+                    </div>
+                </div>
+               {% endfor %}
+             </div>
+            </div>
+        </div>
+  </div>
+  </div>
+</div>
 <a href="{% url 'correspondence:list_radicate' %}" class="btn btn-primary">Listado</a>
 <a href="{% url 'correspondence:current_user' pk=radicate.pk %}" class="btn btn-success">Trasladar</a>
-<a href="{% url 'correspondence:proyect_answer' pk=radicate.pk %}" class="btn btn-info">Responder</a>
+<a href="{% url 'correspondence:project_answer' pk=radicate.pk %}" class="btn btn-info">Responder</a>
 {% endblock %}

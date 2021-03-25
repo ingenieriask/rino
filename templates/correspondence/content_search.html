@@ -1,89 +1,83 @@
 {% extends 'correspondence/main_template.html' %}
+{% load custom_tags %}
 {% block content %}
+
+
 <div class="card mb-4">
   <div class="card-body">
     <form action="{% url 'correspondence:search_by_content' %}" method="POST">
       {% csrf_token %}
       {% load crispy_forms_tags %}
-          {{form | crispy}}
+      {{form | crispy}}
       <button type="submit" name="button" class="btn btn-success" >Buscar</button>
     </form>
   </div>
 </div>
-
-{% if results %}
+{% if results or db_results %}
 <div class="card mb-4">
-    <div class="card-header">Resultados</div>
-    <div class="card-body">
-      <div class="datatable">
-        <table class="table compact" id="resultsSearchTable" width="100%" cellspacing='0' >
-          <thead>
-            <tr>
-              <th>score</th>
-              <th>Nombre</th>
-              <th>Fecha de creación</th>
-              <th>Tipo de archivo</th>
-              <th>Tamaño</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tfoot>
-            <th>score</th>
-            <th>Nombre</th>
-            <th>Fecha de creación</th>
-            <th>Tipo de archivo</th>
-            <th>Tamaño</th>
-            <th>Acciones</th>
-          </tfoot>
-          <tbody>
-            {% for result in results %}
-            <tr>
-              <td>{{result.entry.search.score}}</td>
-              <td>{{result.entry.name}}</td>
-              <td>{{result.entry.createdAt}}</td>
-              <td>{{result.entry.content.mimeTypeName}}</td>
-              <td>{{result.entry.content.sizeInBytes | filesizeformat}}</td>
-              <td><a href="{% url 'correspondence:detail_radicate_cmis' cmis_id=result.entry.id %}" class="btn btn-datatable btn-icon btn-transparent-dark"><i data-feather="eye"></i></a>Ver</td>
-            </tr>
-            {%  endfor  %}
-          </tbody>
-        </table>
-        </div>
+  <div class="card-header">Resultados</div>
+  <div class="card-body">
+    <ul class="nav nav-pills nav-justified mb-3" id="results_tabs" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link active" id="content-tab" data-toggle="tab" href="#content" role="tab" aria-controls="contenido" aria-selected="true">Contenido</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="database-tab" data-toggle="tab" href="#database" role="tab" aria-controls="database" aria-selected="false">Datos</a>
+      </li>
+    </ul>
+    <div class="tab-content" id="myTabContent">
+      <div class="tab-pane fade show active" id="content" role="tabpanel" aria-labelledby="contenido">
+        <!--- show results in content -->
+        <span class="badge badge-pill badge-info">{{results.items|length}}</span>
+        <span class="text-sm-center font-weight-light">resultados en la búsqueda de documentos</span>
+        {% for key,value in results.items %}
+          <div class="p-3 border-bottom">
+            <h3><a href="{% url 'correspondence:detail_radicate' pk=value.radicate.pk %}">{{value.radicate.number}}</a></h3>
+            <h6 class="text-right font-weight-light">{{value.search.score|format_percent}}%</h6>
+              <p>
+              <div class="progress" style="height: 2px;">
+                <div class="progress-bar bg-success" role="progressbar" style="width: {{value.search.score|format_percent}}%;" aria-valuenow="{{value.search.score|format_percent}}" aria-valuemin="0" aria-valuemax="100">
+                </div>
+              </div>
+              </p>
+            <p class="text-xl-left font-italic">
+                {% for snippets in value.search.highlight %}
+                  {% for entry in snippets.snippets %}
+                    {{entry|escape}}
+                  {% endfor %}
+                {% endfor %}
+            </p>
+            <p class="text-sm"><span class="font-weight-bold">Creado:</span> {{value.radicate.date_radicated}}</p>
+            <p class="text-sm"><span class="font-weight-bold">Asunto:</span> {{value.radicate.subject}}</p>
+            <p class="text-sm"><span class="font-weight-bold">Remitente:</span> {{value.radicate.person}}</p>
+          </div>
+        {%  endfor  %}
+      </div>
+      <div class="tab-pane fade" id="database" role="tabpanel" aria-labelledby="database">
+        <!-- show results in database -->
+        <span class="badge badge-pill badge-info">{{db_results|length}}</span>
+        <span class="text-sm-center font-weight-light">resultados en la búsqueda en la base de datos</span>
+        {% for item in db_results %}
+          <div class="p-3 border-bottom">
+            <h3><a href="{% url 'correspondence:detail_radicate' pk=item.pk %}">{{item.number}}</a></h3>
+            <h6 class="text-right font-weight-light">{{item.rank|format_percent}}%</h6>
+            <p>
+              <div class="progress" style="height: 2px;">
+                <div class="progress-bar bg-success" role="progressbar" style="width: {{item.rank|format_percent}}%;" aria-valuenow="{{item.rank|format_percent}}" aria-valuemin="0" aria-valuemax="100">
+                </div>
+              </div>
+            </p>
+            <p class="text-xl-left font-italic">
+              {{item.headline|safe}}
+            </p>
+            <p class="text-sm"><span class="font-weight-bold">Creado:</span> {{item.date_radicated}}</p>
+            <p class="text-sm"><span class="font-weight-bold">Asunto:</span> {{item.subject}}</p>
+            <p class="text-sm"><span class="font-weight-bold">Remitente:</span> {{item.person}}</p>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
     </div>
 </div>
-
-  {% elif term %}
-
-  <div class="card mb-4">
-      <div class="card-body">
-          <div class="alert alert-warning alert-icon" role="alert">
-              <div class="alert-icon-aside">
-                  <i data-feather="alert-triangle"></i>
-              </div>
-              <div class="alert-icon-content">
-                  <h6 class="alert-heading">Alerta</h6>
-                  No se ha encontrado el termino "{{term}}" por revise la escritura
-              </div>
-          </div>
-        </div>
-  </div>
-
-  {% endif %}
-
-{% if error %}
-<div class="card mb-4">
-    <div class="card-body">
-        <div class="alert alert-danger alert-icon" role="alert">
-            <div class="alert-icon-aside">
-                <i data-feather="alert-triangle"></i>
-            </div>
-            <div class="alert-icon-content">
-                <h6 class="alert-heading">Error</h6>
-                {{error}}
-            </div>
-        </div>
-      </div>
-</div>
 {% endif %}
-
 {% endblock %}
