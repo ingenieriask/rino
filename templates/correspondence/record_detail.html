@@ -1,0 +1,26 @@
+{% extends 'correspondence/main_template.html' %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header">Expediente {{ Record.name }}</div>
+    <div class="card-body">
+      <p><b>Es TVD:</b> {{ record.is_tvd }}</p>
+      <p><b>Nombre:</b> {{ record.name }}</p>
+      <p><b>Tipificación:</b> {{ record.retention }}</p>
+      <p><b>Asunto:</b> {{ record.subject }}</p>
+      <p><b>Fuente:</b> {{ record.source }}</p>
+      <p><b>Proceso:</b> {{ record.process_type }}</p>
+      <p><b>Usuario Responsable del Proceso:</b> {{ record.responsable }}</p>
+      <p><b>Fecha inicial del proceso:</b> {{ record.init_process_date }}</p>
+      <p><b>Fecha inicial:</b> {{ record.init_date }}</p>
+      <p><b>Fecha final:</b> {{ record.final_date }}</p>
+      <p><b>Fase:</b> {{ record.phase }}</p>
+      <p><b>Disposición final:</b> {{ record.final_disposition }}</p>
+      <p><b>Nivel de seguridad:</b> {{ record.security_level }}</p>
+
+    </div>
+    <div class="card-footer">
+    </div>
+</div>
+<a href="{% url 'correspondence:list_records' %}" class="btn btn-primary">Listado</a>
+{% endblock %}

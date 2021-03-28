@@ -156,6 +156,67 @@ class Radicate(models.Model):
         self.cmis_id = cmis_id
         self.save()
 
+class DocsRetention(models.Model):
+    subraft = models.ForeignKey('Subraft', on_delete=models.PROTECT, related_name='retentions')
+    office = models.ForeignKey('Office', on_delete=models.PROTECT, related_name='retentions')
+    central_file_years = models.IntegerField(default=False)
+    gestion_file_years = models.IntegerField(default=False)
+
+    def __str__(self):
+        return self.subraft.description + ' - ' + self.office.name
+
+class Record(models.Model):
+    
+    PROCESS_TYPES = [
+        ('Proceso de Gestion de Archivo','Proceso de Gestion de Archivo'),
+        ('Proceso de Gestion de Documentos','Proceso de Gestion de Documentos'),
+        ('Proceso de Gestion de Contratos','Proceso de Gestion de Contratos'),
+    ]
+
+    SECURITY_LEVELS = [
+        ('Publico','Publico'),
+        ('Privado','Privado'),
+        ('Reservado','Reservado'),
+        ('Usuario especifico','Usuario especifico'),
+    ]
+    
+    FILE_PHASES = [
+        ('Archivo de Gestion','Archivo de Gestion'),
+        ('Archivo central','Archivo central'),
+        ('Archivo historico','Archivo historico'),
+    ]
+
+    FINAL_DISPOSITION_TYPES = [
+        ('Conservar','Conservar'),
+        ('Medio tecnico','Medio tecnico'),
+        ('Eliminar','Eliminar'),
+        ('Seleccionar','Seleccionar'),
+    ]
+
+    retention = models.ForeignKey('DocsRetention', on_delete=models.PROTECT, related_name='records', default=False)
+    responsable = models.ForeignKey('UserProfileInfo', on_delete=models.PROTECT, related_name='record_responsable', default=False)
+    #TODO manejar en tabla
+    process_type = models.CharField(max_length=128,null=False,choices=PROCESS_TYPES,default='GA')
+    phase = models.CharField(max_length=128,null=False,choices=FILE_PHASES,default='AG')
+    final_disposition = models.CharField(max_length=128,null=False,choices=FINAL_DISPOSITION_TYPES,default='CO')
+    security_level = models.CharField(max_length=128,null=False,choices=SECURITY_LEVELS,default='PU')
+    is_tvd = models.BooleanField()
+    
+    name = models.CharField(max_length=256)
+    subject = models.CharField(max_length=256)
+    source = models.CharField(max_length=256)
+    init_process_date = models.DateField(auto_now=False)
+    init_date = models.DateField(auto_now=False)
+    final_date = models.DateField(auto_now=False)
+    creation_date = models.DateField(auto_now=True)
+    
+    def get_absolute_url(self):
+        return reverse('correspondence:detail_record',args=[self.id])
+
+    def __str__(self):
+        return self.name
+    
+
 def get_first_name(self):
       return self.first_name+' '+self.last_name
 

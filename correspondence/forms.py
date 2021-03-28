@@ -2,7 +2,7 @@ from django import forms
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Row, Column
 from django.contrib.auth.models import User
-from correspondence.models import Radicate, City, UserProfileInfo, Person
+from correspondence.models import Radicate, City, UserProfileInfo, Person, Record
 from pinax.eventlog.models import log, Log
 from crispy_forms.layout import Field
 
@@ -141,3 +141,81 @@ class ChangeCurrentUserForm(forms.ModelForm):
         if commit:
             radicate.save()
         return radicate
+
+class DateInput(forms.DateInput):
+    input_type = 'date'
+
+class RecordForm(forms.ModelForm):
+    class Meta:
+        model = Record
+
+        fields = ['retention', 'responsable', 'process_type', 'phase', 'final_disposition', 'security_level', 'is_tvd', 
+            'name', 'subject', 'source', 'init_process_date', 'init_date', 'final_date']
+        labels = {'retention': 'Tipificación',
+                  'responsable': 'Usuario Responsable del Proceso',
+                  'process_type': 'Proceso', 'phase': 'Fase',
+                  'final_disposition': 'Disposición final', 'security_level': 'Nivel de seguridad',
+                  'is_tvd': '¿Es Tabla de Valoración Documental?', 'name': 'Nombre', 'subject': 'Asunto', 'source': 'Fuente', 'init_process_date': 'Fecha inicial del proceso',
+                  'init_date': 'Fecha inicial', 'final_date': 'Fecha final'}
+
+        widgets = {
+            'retention': forms.Select(attrs={'class': 'selectpicker', 'data-live-search': 'true', 'data-size': '7'}),
+            'responsable': forms.Select(attrs={'class': 'selectpicker', 'data-live-search': 'true', 'data-size': '7'}),
+            'init_process_date': DateInput(),
+            'init_date': DateInput(),
+            'final_date': DateInput(),
+        }
+
+    # def save(self, commit=True):
+    #     record = super(RecordForm, self).save(commit=False)
+    #     # log(
+    #     #     user='',
+    #     #     action="RECORD_SAVE",
+    #     #     obj=record,
+    #     #     extra=dict(number=radicate.number, message="Se ha guardado el expediente")
+    #     # )
+
+    #     if commit:
+    #         record.save()
+    #     return record
+
+    def __init__(self, *args, **kwargs):
+        super(RecordForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.layout = Layout(
+        Row(
+            Column('is_tvd', css_class='form-group col-md-12 mb-0'),
+            css_class='form-row'
+        ),
+        Row(
+            Column('name', css_class='form-group col-md-12 mb-0'),
+            css_class='form-row'
+        ),
+        Row(
+            Column('retention', css_class='form-group col-md-12 mb-0'),
+            css_class='form-row'
+        ),
+        Row(
+            Column('subject', css_class='form-group col-md-6 mb-0'),
+            Column('source', css_class='form-group col-md-6 mb-0'),
+            css_class='form-row'
+        ),
+        Row(
+            Column('process_type', css_class='form-group col-md-6 mb-0'),
+            Column('responsable', css_class='form-group col-md-6 mb-0'),
+            css_class='form-row'
+        ),
+        Row(
+            Column('init_process_date', css_class='form-group col-md-4 mb-0'),
+            Column('init_date', css_class='form-group col-md-4 mb-0'),
+            Column('final_date', css_class='form-group col-md-4 mb-0'),
+            css_class='form-row'
+        ),
+        Row(
+            Column('phase', css_class='form-group col-md-4 mb-0'),
+            Column('final_disposition', css_class='form-group col-md-4 mb-0'),
+            Column('security_level', css_class='form-group col-md-4 mb-0'),
+            css_class='form-row'
+        ),
+        'parent',
+    )
