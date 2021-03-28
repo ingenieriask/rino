@@ -1,5 +1,5 @@
 from django.contrib import admin
-from correspondence.models import State, City, Radicate, UserProfileInfo, Office, Person, Country, Raft, Subraft, Doctype
+from correspondence.models import State, City, Radicate, UserProfileInfo, Office, Person, Country, Raft, Subraft, Doctype, DocsRetention, Record
 
 # Register your models here.
 admin.site.register(State)
@@ -11,6 +11,8 @@ admin.site.register(UserProfileInfo)
 admin.site.register(Office)
 admin.site.register(Person)
 admin.site.register(Country)
+admin.site.register(DocsRetention)
+admin.site.register(Record)
 
 
 @admin.register(Radicate)

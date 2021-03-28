@@ -24,4 +24,8 @@ urlpatterns = [
     path('register/', views.register, name='register'),
     path('charts/', views.charts, name='charts'),
     path('project_answer/<int:pk>/', views.project_answer, name='project_answer'),
+    path('record/create/', views.RecordCreateView.as_view(), name='create_record'),
+    path('record_detail/<int:pk>/', views.RecordDetailView.as_view(), name='detail_record'),
+    path('record/edit/<int:pk>/', views.RecordUpdateView.as_view(), name='edit_record'),
+    path('record/list/', views.RecordListView.as_view(), name='list_records'),
 ]

@@ -1,11 +1,11 @@
 from typing import Dict
 
 from django.shortcuts import render
-from correspondence.forms import RadicateForm , SearchForm, UserForm,  UserProfileInfoForm, PersonForm, SearchContentForm, ChangeCurrentUserForm ,LoginForm
+from correspondence.forms import RadicateForm , SearchForm, UserForm,  UserProfileInfoForm, PersonForm, RecordForm, SearchContentForm, ChangeCurrentUserForm ,LoginForm
 from datetime import datetime
 from django.utils.timezone import get_current_timezone
 from django.conf import settings
-from correspondence.models import Radicate, Person
+from correspondence.models import Radicate, Person, Record
 from django.shortcuts import get_list_or_404, get_object_or_404, render
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.urls import reverse
@@ -350,13 +350,42 @@ class PersonCreateView(CreateView):
     model = Person
     form_class = PersonForm
 
-
 class PersonDetailView(DetailView):
     model = Person
 
 class PersonUpdateView(UpdateView):
     model = Person
     form_class = PersonForm
+
+
+# RECORDS Views
+class RecordCreateView(CreateView):
+    model = Record
+    form_class = RecordForm
+
+    # def form_valid(self, form):
+    #     self.object = form.save()
+    #     # do something with self.object
+    #     # remember the import: from django.http import HttpResponseRedirect
+    #     messages.success(self.request,"El expediente se ha creado correctamente")
+    #     return HttpResponseRedirect(self.get_success_url())
+
+
+
+class RecordDetailView(DetailView):
+    model = Record
+
+class RecordUpdateView(UpdateView):
+    model = Record
+    form_class = RecordForm
+
+class RecordListView(ListView):
+    model = Record
+    context_object_name = 'records'
+
+    def get_queryset(self):
+        queryset = super(RecordListView, self).get_queryset()
+        return queryset
 
     # Charts
 def charts(request):
