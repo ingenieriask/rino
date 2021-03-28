@@ -94,7 +94,8 @@ DATABASES = {
         'NAME': 'rino',
         'USER': 'rino',
         'PASSWORD': 'Mamacall3128!!..',
-        'HOST': 'localhost',
+        'HOST': '192.168.1.116',
+        'PORT': '5433'
     }
 }
 
@@ -158,9 +159,9 @@ XS_SHARING_ALLOWED_METHODS = ['POST', 'GET', 'OPTIONS', 'PUT', 'DELETE']
 
 # Config constants
 
-ECM_SEARCH_URL = 'http://192.168.1.111:8080/alfresco/api/-default-/public/search/versions/1/search'
-ECM_UPLOAD_URL = 'http://192.168.1.111:8080/alfresco/service/api/upload'
-CONVERT_URL = 'http://192.168.1.111:3000/convert/office'
+ECM_SEARCH_URL = 'http://192.168.1.116:8080/alfresco/api/-default-/public/search/versions/1/search'
+ECM_UPLOAD_URL = 'http://192.168.1.116:8080/alfresco/service/api/upload'
+CONVERT_URL = 'http://192.168.1.116:3000/convert/office'
 
 ECM_USER = 'admin'
 ECM_PASSWORD = 'Mamacall3128!!..'
@@ -178,7 +179,7 @@ MESSAGE_TAGS = {
 #EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = 'donaldo.jinette@gmail.com'
-EMAIL_HOST_PASSWORD = 'Mamacall3128!!..'
+EMAIL_HOST_PASSWORD = 'XXXXXXXX'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
