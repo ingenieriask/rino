@@ -181,12 +181,12 @@ MESSAGE_TAGS = {
     messages.ERROR: 'alert-danger',
 }
 
-#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = 'mcubides@gmail.com'
-EMAIL_HOST_PASSWORD = 'Alcon1234*.'
+EMAIL_HOST_PASSWORD = 'Alcon132644*.'
 EMAIL_PORT = 587
-EMAIL_USE_TLS = True
 
 AUTH_USER_MODEL = 'auth.User'
 

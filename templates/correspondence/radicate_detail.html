@@ -65,10 +65,12 @@
                         <div class="timeline-item-marker-indicator bg-green"></div>
                     </div>
                     <div class="timeline-item-content">
-                         El radicado
-                        {{log.extra.number}},
-                        {{log.extra.message}} ( {{log.user}} )
+                         {% comment %} El radicado
+                        {{log.extra.number}}, {% endcomment %}
+                        {{log.extra.message}} 
+                        {% comment %} ( {{log.user}} ) {% endcomment %}
                         el {{log.timestamp | date:"D d M Y P "  }}
+
                     </div>
                 </div>
                {% endfor %}

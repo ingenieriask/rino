@@ -20,6 +20,8 @@ from django.contrib.postgres.search import SearchVector, TrigramSimilarity, Sear
 
 from django.contrib import messages
 
+from django.core.mail import send_mail
+
 import requests
 import json
 import os
@@ -224,7 +226,8 @@ def create_radicate(request,person):
                 action="RADICATE_CREATED",
                 obj=radicate,
                 extra={
-                    "number": radicate.number
+                    "number": radicate.number,
+                    "message": "El radicado %s ha sido creado" % (radicate.number)
                 }
             )
 
@@ -232,6 +235,13 @@ def create_radicate(request,person):
             auth = (settings.ECM_USER, settings.ECM_PASSWORD)
             files = {"filedata": open(os.path.join(BASE_DIR,radicate.document_file.path), "rb")}
             data = {"siteid": "rino", "containerid": "files"}
+
+            send_mail(
+                'Notificación RINO: recepción de radicado',
+                'Buenos días señor usuario.',
+                'notificaciones-rino@gmail.com',
+                [instance.person.email],
+            )
 
             try:
                 r = requests.post(url, files=files, data=data, auth=auth)
@@ -282,6 +292,17 @@ class RecordAssignedUpdate(UpdateView):
         url = settings.ECM_RECORD_ASSIGN_URL + self.object.cmis_id + '/move'
         auth = (settings.ECM_USER, settings.ECM_PASSWORD)
         data = '{"targetParentId": "' + self.object.record.cmis_id + '"}' 
+
+        log(
+            user=self.request.user,
+            action="RADICATE_ASSIGNED_TO_RECORD",
+            obj=self.object,
+            extra={
+                "number": self.object.number,
+                "record": self.object.record.name,
+                "message": "El radicado %s ha sido incluído en el expediente %s" % (self.object.number, self.object.record.name)
+            }
+        )
 
         try:
             r = requests.post(url, data=data, auth=auth)
