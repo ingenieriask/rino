@@ -4,6 +4,12 @@
 <div class="card mb-4">
     <div class="card-header">Expediente {{ Record.name }}</div>
     <div class="card-body">
+      <div class="jumbotron">
+        <h1 class="display-4">{{ record.name }}</h1>
+        <p class="lead">{{ record.subject  }}</p>
+        <hr class="my-4">
+        <p>{{ record.retention }}</p>
+      </div>
       <p><b>Es TVD:</b> {{ record.is_tvd }}</p>
       <p><b>Nombre:</b> {{ record.name }}</p>
       <p><b>Tipificación:</b> {{ record.retention }}</p>
