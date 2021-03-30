@@ -161,7 +161,8 @@ class RecordForm(forms.ModelForm):
                   'responsable': 'Usuario Responsable del Proceso',
                   'process_type': 'Proceso', 'phase': 'Fase',
                   'final_disposition': 'Disposición final', 'security_level': 'Nivel de seguridad',
-                  'is_tvd': '¿Es Tabla de Valoración Documental?', 'name': 'Nombre', 'subject': 'Asunto', 'source': 'Fuente', 'init_process_date': 'Fecha inicial del proceso',
+                  'is_tvd': '¿Es Tabla de Valoración Documental?', 'name': 'Nombre', 'subject': 'Asunto',
+                  'source': 'Fuente', 'init_process_date': 'Fecha inicial del proceso',
                   'init_date': 'Fecha inicial', 'final_date': 'Fecha final'}
 
         widgets = {

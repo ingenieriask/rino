@@ -1,7 +1,7 @@
 {% extends 'correspondence/main_template.html' %}
+{% load static %}
 {% load custom_tags %}
 {% block content %}
-
 
 <div class="card mb-4">
   <div class="card-body">
@@ -33,6 +33,7 @@
         {% for key,value in results.items %}
           <div class="p-3 border-bottom">
             <h3><a href="{% url 'correspondence:detail_radicate' pk=value.radicate.pk %}">{{value.radicate.number}}</a></h3>
+            <img src="{{ MEDIA_URL }}{{ value.img }}" class="img-thumbnail float-right img-fluid ml-2" style="max-width: 15%" data-nodeid="{{ value.radicate.cmis_id }}" alt="Responsive image">
             <h6 class="text-right font-weight-light">{{value.search.score|format_percent}}%</h6>
               <p>
               <div class="progress" style="height: 2px;">

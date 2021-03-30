@@ -31,19 +31,16 @@ import logging
 from pinax.eventlog.models import log, Log
 logger = logging.getLogger(__name__)
 
-
 from requests.auth import HTTPBasicAuth
 
 
 # Index view
 
 def index(request):
-    return render(request,'correspondence/index.html',{})
-
+    return render(request, 'correspondence/index.html', {})
 
 
 def register(request):
-
     registered = False
     message = None
 
@@ -68,7 +65,7 @@ def register(request):
             message = "El usuario ha sido creado con éxito"
             user_form = UserForm()
         else:
-            logger.error(user_form.errors,user_profile_form.errors)
+            logger.error(user_form.errors, user_profile_form.errors)
     else:
         user_form = UserForm()
         user_profile_form = UserProfileInfoForm()
@@ -86,7 +83,6 @@ def user_logout(request):
 
 @login_required
 def search_by_content(request):
-
     term = ''
     results = []
     response = None
@@ -105,56 +101,71 @@ def search_by_content(request):
             try:
                 response = requests.post(
                     settings.ECM_SEARCH_URL,
-                    json =dict(query=dict(query=term),
-                            highlight=dict(
-                            mergeContiguous=True, fragmentSize=150,
-                            usePhraseHighlighter=True,
-                            fields=[
-                                dict(field="name", prefix="( ", postfix=" )"),
-                                dict(field="content", prefix="( ", postfix=" )")
-                            ])),
-                    auth = HTTPBasicAuth(settings.ECM_USER, settings.ECM_PASSWORD),
+                    json=dict(query=dict(query=term),
+                              highlight=dict(
+                                  mergeContiguous=True, fragmentSize=150,
+                                  usePhraseHighlighter=True,
+                                  fields=[
+                                      dict(field="name", prefix="( ", postfix=" )"),
+                                      dict(field="content", prefix="( ", postfix=" )")
+                                  ])),
+                    auth=HTTPBasicAuth(settings.ECM_USER, settings.ECM_PASSWORD),
                     headers=headers
                 )
 
                 # list of responses from ECM
                 entries = response.json()['list']['entries']
                 # list of cmis id's from response
-                cmis_id_list=[ data['entry']['id'] for data in entries ]
+                cmis_id_list = [data['entry']['id'] for data in entries]
                 # list of radicates with the cmis id's
                 radicate_list = Radicate.objects.filter(cmis_id__in=cmis_id_list).distinct()
-                # list of cmis id's in efect in the radicates .
-                cmis_filtered_ids = [ radicate.cmis_id for radicate in radicate_list ]
+                # list of cmis id's in effect in the radicates .
+                cmis_filtered_ids = [radicate.cmis_id for radicate in radicate_list]
 
-
-                # We made a dictionary with the results for send its to the template
+                # We made a dictionary with the results for send them to the template
                 # first we add the search of the json part from the response
                 for entry in entries:
                     if entry['entry']['id'] in cmis_filtered_ids:
-                        search_results[entry['entry']['id']]={"search":entry['entry']['search']}
+                        search_results[entry['entry']['id']] = {"search": entry['entry']['search']}
 
                 # second we add the radicates to the dictionary with the cmis_id as key
                 for radi in radicate_list:
-                   search_results[radi.cmis_id]['radicate']=radi
+                    search_results[radi.cmis_id]['radicate'] = radi
+                    print(settings.ECM_PREVIEW_URL.replace('{nodeId}', radi.cmis_id))
 
+                    prev_response = requests.get(
+                        settings.ECM_PREVIEW_URL.replace('{nodeId}', radi.cmis_id),
+                        auth=HTTPBasicAuth(settings.ECM_USER, settings.ECM_PASSWORD)
+                    )
+                    print(prev_response.headers['Content-Type'].split(';')[0].split('/')[1])
+                    file_ext = prev_response.headers['Content-Type'].split(';')[0].split('/')[1]
+
+                    print(os.path.join(settings.MEDIA_ROOT, radi.cmis_id + '.' + file_ext))
+
+                    with open(os.path.join(settings.MEDIA_ROOT, radi.cmis_id + '.' + file_ext),
+                              mode='wb') as preview_image:
+                        preview_image.write(prev_response.content)
+
+                    search_results[radi.cmis_id]['img'] = radi.cmis_id + '.' + file_ext
 
                 if radicate_list.count():
-                   logger.info(results)
+                    logger.info(results)
                 else:
-                    messages.info(request,"No se ha encontrado el término en el contenido")
+                    messages.info(request, "No se ha encontrado el término en el contenido")
 
             except Exception as inst:
-                messages.error(request, "Ha occurrido un error al realizar la búsqueda, por favor intente más tarde")
-
+                messages.error(request, "Ha ocurrido un error al realizar la búsqueda, por favor intente más tarde")
 
             finally:
                 # finally we search for results in the database
 
-                vector = SearchVector('number', 'subject',  'person__name','person__document_number')
+                vector = SearchVector('number', 'subject', 'person__name', 'person__document_number')
                 query = SearchQuery(term)
 
                 qs = Radicate.objects.annotate(rank=SearchRank(vector, query),
-                    headline=SearchHeadline('subject',query,start_sel='<u>',stop_sel='</u>',)).filter(rank__gte=0.06).order_by('-rank')
+                                               headline=SearchHeadline('subject', query, start_sel='<u>',
+                                                                       stop_sel='</u>', )).filter(
+                    rank__gte=0.06).order_by('-rank')
 
                 if not qs.count():
                     messages.info(request, "La búsqueda en la base de datos no obtuvo resultados")
@@ -163,20 +174,22 @@ def search_by_content(request):
     else:
         form = SearchContentForm()
 
-    return render(request,'correspondence/content_search.html',context={'term':term,'results':search_results, 'db_results':qs ,'form':form})
+    return render(request, 'correspondence/content_search.html',
+                  context={'term': term, 'results': search_results, 'db_results': qs, 'form': form})
 
 
 # Search by names
 @login_required
 def search_names(request):
-
     if request.method == 'POST':
-        form=SearchForm(request.POST)
+        form = SearchForm(request.POST)
         if form.is_valid():
             item = form.cleaned_data['item']
-            qs = Person.objects.annotate(search=SearchVector('document_number','email','name','address','parent__name'),).filter(search=item)
+            qs = Person.objects.annotate(
+                search=SearchVector('document_number', 'email', 'name', 'address', 'parent__name'), ).filter(
+                search=item)
             if not qs.count():
-                messages.warning(request,"La búsqueda no obtuvo resultados")
+                messages.warning(request, "La búsqueda no obtuvo resultados")
 
             person_form = PersonForm()
     else:
@@ -184,7 +197,7 @@ def search_names(request):
         qs = None
         person_form = None
 
-    return render(request,'correspondence/search.html',context={'form':form,'list':qs,'person_form':person_form})
+    return render(request, 'correspondence/search.html', context={'form': form, 'list': qs, 'person_form': person_form})
 
 
 # autocomplete
@@ -201,13 +214,12 @@ def autocomplete(request):
 # Radicate Views
 
 @login_required
-def create_radicate(request,person):
-
+def create_radicate(request, person):
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    person = get_object_or_404(Person,id=person)
+    person = get_object_or_404(Person, id=person)
 
     if request.method == 'POST':
-        form = RadicateForm(request.POST,request.FILES)
+        form = RadicateForm(request.POST, request.FILES)
 
         if form.is_valid():
             instance = form.save(commit=False)
@@ -220,7 +232,6 @@ def create_radicate(request,person):
             instance.person = person
             radicate = form.save()
 
-
             log(
                 user=request.user,
                 action="RADICATE_CREATED",
@@ -231,9 +242,7 @@ def create_radicate(request,person):
                 }
             )
 
-            url = settings.ECM_UPLOAD_URL
-            auth = (settings.ECM_USER, settings.ECM_PASSWORD)
-            files = {"filedata": open(os.path.join(BASE_DIR,radicate.document_file.path), "rb")}
+            files = {"filedata": open(os.path.join(BASE_DIR, radicate.document_file.path), "rb")}
             data = {"siteid": "rino", "containerid": "files"}
 
             send_mail(
@@ -244,26 +253,32 @@ def create_radicate(request,person):
             )
 
             try:
-                r = requests.post(url, files=files, data=data, auth=auth)
-                json_response =(json.loads(r.text))
-                radicate.set_cmis_id(json_response['entry']['id'])
+                res_upload = requests.post(settings.ECM_UPLOAD_URL, files=files, data=data,
+                                           auth=(settings.ECM_USER, settings.ECM_PASSWORD))
+                json_response = (json.loads(res_upload.text))
+                node_id = json_response['entry']['id']
+                radicate.set_cmis_id(node_id)
+                url_renditions = settings.ECM_REQUEST_RENDITIONS.replace('{nodeId}', node_id)
+                data_renditions = '{"id": "imgpreview"}'
+                res_renditions = requests.post(url_renditions, data=data_renditions,
+                                               auth=(settings.ECM_USER, settings.ECM_PASSWORD))
 
             except Exception as Error:
 
                 logger.error(Error)
-                messages.error(request,"Ha ocurrido un error al guardar el archivo en el gestor de contenido")
+                messages.error(request, "Ha ocurrido un error al guardar el archivo en el gestor de contenido")
 
-            messages.success(request,"El radicado se ha creado correctamente")
+            messages.success(request, "El radicado se ha creado correctamente")
             url = reverse('correspondence:detail_radicate', kwargs={'pk': radicate.pk})
             return HttpResponseRedirect(url)
         else:
             logger.error("Invalid create radicate form")
-            return render(request,'correspondence/create_radicate.html',context={'form':form,'person':person})
+            return render(request, 'correspondence/create_radicate.html', context={'form': form, 'person': person})
     else:
-        form = RadicateForm(initial={'person':person.id})
+        form = RadicateForm(initial={'person': person.id})
         form.person = person
 
-    return render(request,'correspondence/create_radicate.html',context={'form':form,'person':person})
+    return render(request, 'correspondence/create_radicate.html', context={'form': form, 'person': person})
 
 
 class RadicateList(ListView):
@@ -287,11 +302,11 @@ class RecordAssignedUpdate(UpdateView):
     form_class = ChangeRecordAssignedForm
 
     def form_valid(self, form):
-    
+
         response = super(RecordAssignedUpdate, self).form_valid(form)
         url = settings.ECM_RECORD_ASSIGN_URL + self.object.cmis_id + '/move'
         auth = (settings.ECM_USER, settings.ECM_PASSWORD)
-        data = '{"targetParentId": "' + self.object.record.cmis_id + '"}' 
+        data = '{"targetParentId": "' + self.object.record.cmis_id + '"}'
 
         log(
             user=self.request.user,
@@ -318,10 +333,10 @@ class RecordAssignedUpdate(UpdateView):
             return self.form_invalid(form)
 
 
-def edit_radicate(request,id):
-    radicate = get_object_or_404(Radicate,id=id)
+def edit_radicate(request, id):
+    radicate = get_object_or_404(Radicate, id=id)
     form = RadicateForm(instance=radicate)
-    return render(request,'correspondence/create_radicate.html',context={'form':form,'person':radicate.person})
+    return render(request, 'correspondence/create_radicate.html', context={'form': form, 'person': radicate.person})
 
 
 class RadicateDetailView(DetailView):
@@ -333,43 +348,44 @@ class RadicateDetailView(DetailView):
         return context
 
 
-def detail_radicate_cmis(request,cmis_id):
-    radicate = get_object_or_404(Radicate,cmis_id=cmis_id)
+def detail_radicate_cmis(request, cmis_id):
+    radicate = get_object_or_404(Radicate, cmis_id=cmis_id)
     logs = Log.objects.all().filter(object_id=radicate.pk)
-    return render(request,'correspondence/radicate_detail.html',context={'radicate':radicate,'logs':logs})
+    return render(request, 'correspondence/radicate_detail.html', context={'radicate': radicate, 'logs': logs})
 
 
-def project_answer(request,pk):
-    radicate = get_object_or_404(Radicate,id=pk)
+def project_answer(request, pk):
+    radicate = get_object_or_404(Radicate, id=pk)
     response_file = None
     answer = ''
 
 
     if request.method == 'POST':
         BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        doc=Document(os.path.join(BASE_DIR,'media/template.docx'))
+        doc = Document(os.path.join(BASE_DIR, 'media/template.docx'))
 
         Dictionary = {
-            "*RAD_N*":datetime.now().strftime("%Y%m%d%H%M%S"),
+            "*RAD_N*": datetime.now().strftime("%Y%m%d%H%M%S"),
             "*NOMBRES*": str(radicate.person),
             "*CIUDAD*": str(radicate.person.city),
-            "*DIRECCION*": str(radicate.person.address)+" - "+str(radicate.person.city),
-            "*EMAIL*":str(radicate.person.email),
-            "*ASUNTO*": "RESPUESTA "+str(radicate.subject),
-            '*FECHA*':datetime.now().strftime("%Y/%m/%d %H:%M:%S"),
-            '*ANEXO*':'Imágenes',
-            "*TEXTO*":str(request.POST.get("answer")).replace("\n",""),
-            "*NOMBRES_REMITENTE*":str(radicate.current_user.user.first_name)+" "+str(radicate.current_user.user.last_name)
-            }
+            "*DIRECCION*": str(radicate.person.address) + " - " + str(radicate.person.city),
+            "*EMAIL*": str(radicate.person.email),
+            "*ASUNTO*": "RESPUESTA " + str(radicate.subject),
+            '*FECHA*': datetime.now().strftime("%Y/%m/%d %H:%M:%S"),
+            '*ANEXO*': 'Imágenes',
+            "*TEXTO*": str(request.POST.get("answer")).replace("\n", ""),
+            "*NOMBRES_REMITENTE*": str(radicate.current_user.user.first_name) + " " + str(
+                radicate.current_user.user.last_name)
+        }
 
         for i in Dictionary:
             for p in doc.paragraphs:
-                if p.text.find(i)>=0:
-                    p.text=p.text.replace(i,Dictionary[i])
+                if p.text.find(i) >= 0:
+                    p.text = p.text.replace(i, Dictionary[i])
 
-        doc.save(os.path.join(BASE_DIR,'media/output.docx'))
+        doc.save(os.path.join(BASE_DIR, 'media/output.docx'))
 
-        files = {'files':open(os.path.join(BASE_DIR,'media/output.docx'),'rb')}
+        files = {'files': open(os.path.join(BASE_DIR, 'media/output.docx'), 'rb')}
 
         try:
             response = requests.post(
@@ -382,13 +398,13 @@ def project_answer(request,pk):
             response_file = 'media/response.pdf'
             answer = str(request.POST.get("answer")).replace("\n", "")
 
-
         except Exception as Error:
             logger.error(Error)
-            messages.error(request, "Ha ocurrido un error al comunicarse con los servicios de conversión. Por favor informe al administrador del sistema")
+            messages.error(request,
+                           "Ha ocurrido un error al comunicarse con los servicios de conversión. Por favor informe al administrador del sistema")
 
-
-    return render(request,'correspondence/radicate_answer.html',{'radicate':radicate,'response_file':response_file,'answer':answer})
+    return render(request, 'correspondence/radicate_answer.html',
+                  {'radicate': radicate, 'response_file': response_file, 'answer': answer})
 
 
 # PERSONS Views
@@ -396,8 +412,10 @@ class PersonCreateView(CreateView):
     model = Person
     form_class = PersonForm
 
+
 class PersonDetailView(DetailView):
     model = Person
+
 
 class PersonUpdateView(UpdateView):
     model = Person
@@ -432,20 +450,21 @@ class RecordCreateView(CreateView):
             return self.form_invalid(form)
 
 
-
 class RecordDetailView(DetailView):
     model = Record
+
 
 class RecordUpdateView(UpdateView):
     model = Record
     form_class = RecordForm
 
+
     def form_valid(self, form):
-    
+
         response = super(RecordUpdateView, self).form_valid(form)
         url = settings.ECM_RECORD_UPDATE_URL + self.object.cmis_id
         auth = (settings.ECM_USER, settings.ECM_PASSWORD)
-        data = '{"name": "' + self.object.name + '"}' 
+        data = '{"name": "' + self.object.name + '"}'
 
         try:
             r = requests.put(url, data=data, auth=auth)
@@ -469,5 +488,7 @@ class RecordListView(ListView):
         return queryset
 
     # Charts
+
+
 def charts(request):
-    return render(request,'correspondence/charts.html',context={})
+    return render(request, 'correspondence/charts.html', context={})

@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+from django.contrib.messages import constants as messages
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -71,6 +72,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.media',
             ],
         },
     },
@@ -94,9 +96,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'rino',
         'USER': 'rino',
-        'PASSWORD': 'rino',
-        'HOST': 'localhost',
-        'PORT': '5434'
+        'PASSWORD': 'Mamacall3128!!..',
+        'HOST': '192.168.1.116',
+        'PORT': '5433'
     }
 }
 
@@ -146,6 +148,7 @@ STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
+    os.path.join(BASE_DIR, "static/correspondence/thumbnails")
 ]
 
 MEDIA_ROOT = MEDIA_DIR
@@ -161,17 +164,18 @@ XS_SHARING_ALLOWED_METHODS = ['POST', 'GET', 'OPTIONS', 'PUT', 'DELETE']
 # Config constants
 
 ECM_SEARCH_URL = 'http://localhost:8080/alfresco/api/-default-/public/search/versions/1/search'
-ECM_UPLOAD_URL = 'http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/5b57c8cc-5c0d-459f-894e-49744ed66a55/children?autoRename=false'
-ECM_RECORD_URL = 'http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/ca185275-001c-4d99-a701-7175f53bda70/children?autoRename=false'
+ECM_UPLOAD_URL = 'http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/7cd0589d-9c2e-4056-a97b-5f32961779ea/children?autoRename=false'
+ECM_RECORD_URL = 'http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/02008fb8-0615-4220-994d-a721685e3567/children?autoRename=false'
 ECM_RECORD_ASSIGN_URL = 'http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/'
 ECM_RECORD_UPDATE_URL = 'http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/'
-
 CONVERT_URL = 'http://localhost:3000/convert/office'
+ECM_REQUEST_RENDITIONS = 'http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/{' \
+                         'nodeId}/renditions'
+ECM_PREVIEW_URL = 'http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/{' \
+                  'nodeId}/renditions/imgpreview/content?attachment=false&placeholder=true'
 
 ECM_USER = 'admin'
-ECM_PASSWORD = 'adminadmin'
-
-from django.contrib.messages import constants as messages
+ECM_PASSWORD = 'Mamacall3128!!..'
 
 MESSAGE_TAGS = {
     messages.DEBUG: 'alert-info',
@@ -181,12 +185,12 @@ MESSAGE_TAGS = {
     messages.ERROR: 'alert-danger',
 }
 
-# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-EMAIL_USE_TLS = True
+#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'mcubides@gmail.com'
-EMAIL_HOST_PASSWORD = 'Alcon132644*.'
+EMAIL_HOST_USER = 'donaldo.jinette@gmail.com'
+EMAIL_HOST_PASSWORD = 'Samuel3128!!..'
 EMAIL_PORT = 587
+EMAIL_USE_TLS = True
 
 AUTH_USER_MODEL = 'auth.User'
 

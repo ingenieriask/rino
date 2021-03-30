@@ -9,9 +9,9 @@ $(document).ready(function(){
     
     $("#id_document_file").fileinput({
         theme: 'fas',
-        allowedFileExtensions: ['pdf'],
+        allowedFileExtensions: ['pdf','docx','png','jpg','jpeg'],
         overwriteInitial: true,
-        maxFileSize:2000,
+        maxFileSize:20000,
         maxFilesNum: 1,
         language: 'es',
         slugCallback: function (filename) {
@@ -26,5 +26,4 @@ $(document).ready(function(){
 
       });
 
-      console.log("Termina la ejecución");
 });
