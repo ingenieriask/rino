@@ -163,6 +163,7 @@ XS_SHARING_ALLOWED_METHODS = ['POST', 'GET', 'OPTIONS', 'PUT', 'DELETE']
 ECM_SEARCH_URL = 'http://localhost:8080/alfresco/api/-default-/public/search/versions/1/search'
 ECM_UPLOAD_URL = 'http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/5b57c8cc-5c0d-459f-894e-49744ed66a55/children?autoRename=false'
 ECM_RECORD_URL = 'http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/ca185275-001c-4d99-a701-7175f53bda70/children?autoRename=false'
+ECM_RECORD_ASSIGN_URL = 'http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/'
 ECM_RECORD_UPDATE_URL = 'http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/'
 
 CONVERT_URL = 'http://localhost:3000/convert/office'
@@ -183,7 +184,7 @@ MESSAGE_TAGS = {
 #EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = 'mcubides@gmail.com'
-EMAIL_HOST_PASSWORD = '****.'
+EMAIL_HOST_PASSWORD = 'Alcon1234*.'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 

@@ -1,7 +1,7 @@
 from typing import Dict
 
 from django.shortcuts import render
-from correspondence.forms import RadicateForm , SearchForm, UserForm,  UserProfileInfoForm, PersonForm, RecordForm, SearchContentForm, ChangeCurrentUserForm ,LoginForm
+from correspondence.forms import RadicateForm , SearchForm, UserForm,  UserProfileInfoForm, PersonForm, RecordForm, SearchContentForm, ChangeCurrentUserForm, ChangeRecordAssignedForm ,LoginForm
 from datetime import datetime
 from django.utils.timezone import get_current_timezone
 from django.conf import settings
@@ -271,6 +271,31 @@ class CurrentUserUpdate(UpdateView):
     template_name_suffix = '_currentuser_update_form'
     form_class = ChangeCurrentUserForm
 
+class RecordAssignedUpdate(UpdateView):
+    model = Radicate
+    template_name_suffix = '_recordassigned_update_form'
+    form_class = ChangeRecordAssignedForm
+
+    def form_valid(self, form):
+    
+        response = super(RecordAssignedUpdate, self).form_valid(form)
+        url = settings.ECM_RECORD_ASSIGN_URL + self.object.cmis_id + '/move'
+        auth = (settings.ECM_USER, settings.ECM_PASSWORD)
+        data = '{"targetParentId": "' + self.object.record.cmis_id + '"}' 
+
+        try:
+            r = requests.post(url, data=data, auth=auth)
+            json_response =(json.loads(r.text))
+            print(json_response)
+            messages.success(self.request, "El archivo se ha guardado correctamente en el expediente")
+            return response
+
+        except Exception as Error:
+            logger.error(Error)
+            messages.error(self.request,"Ha ocurrido un error al actualizar el archivo en el gestor de contenido")
+            self.object = None
+            return self.form_invalid(form)
+
 
 def edit_radicate(request,id):
     radicate = get_object_or_404(Radicate,id=id)
@@ -377,14 +402,12 @@ class RecordCreateView(CreateView):
             print(json_response)
             self.object.set_cmis_id(json_response['entry']['id'])
             messages.success(self.request, "El expediente se ha guardado correctamente")
-            print('success')
             return response
 
         except Exception as Error:
             logger.error(Error)
             messages.error(self.request,"Ha ocurrido un error al crear el expediente en el gestor de contenido")
             self.object = None
-            print('error')
             return self.form_invalid(form)
 
 

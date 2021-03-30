@@ -18,6 +18,7 @@ urlpatterns = [
     path('radicate_detail/<str:cmis_id>/', views.detail_radicate_cmis, name="detail_radicate_cmis"),
     path('edit_radicate/<int:id>/', views.edit_radicate, name='edit_radicate'),
     path('current_user/<int:pk>/', views.CurrentUserUpdate.as_view(), name='current_user'),
+    path('recordassigned/<int:pk>/', views.RecordAssignedUpdate.as_view(), name='recordassigned'),
     path('person/create/', views.PersonCreateView.as_view(), name='create_person'),
     path('person/<int:pk>/', views.PersonDetailView.as_view(), name='detail_person'),
     path('edit_person/<int:pk>/', views.PersonUpdateView.as_view(), name='edit_person'),

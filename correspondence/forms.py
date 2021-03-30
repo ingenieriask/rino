@@ -7,7 +7,6 @@ from pinax.eventlog.models import log, Log
 from django.urls import reverse
 from crispy_forms.layout import Field, ButtonHolder, Button
 
-
 class CustomFileInput(Field):
     template = 'custom_fileinput.html'
 
@@ -142,6 +141,15 @@ class ChangeCurrentUserForm(forms.ModelForm):
         if commit:
             radicate.save()
         return radicate
+
+class ChangeRecordAssignedForm(forms.ModelForm):
+    class Meta:
+        model = Radicate
+        fields = ['record']
+        labels = {'record': 'Expediente'}
+        widgets = {
+            'record': forms.Select(attrs={'class': 'selectpicker', 'data-live-search': 'true'})
+        }
 
 class RecordForm(forms.ModelForm):
     class Meta:

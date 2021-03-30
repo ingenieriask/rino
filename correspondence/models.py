@@ -138,6 +138,7 @@ class Radicate(models.Model):
     type = models.TextField(max_length=60,null=False,choices=RADICATE_TYPES,default='EN')
     date_radicated = models.DateTimeField(default=datetime.now,db_index=True)
     creator = models.ForeignKey(UserProfileInfo,on_delete=models.CASCADE,related_name='radicates_creator',default=False)
+    record = models.ForeignKey('Record',on_delete=models.CASCADE,related_name='record',blank=True,null=True)
     person = models.ForeignKey('Person',on_delete=models.CASCADE,related_name='radicates_person',default=False)
     current_user = models.ForeignKey(UserProfileInfo,on_delete=models.CASCADE,related_name='radicates_user',default=False)
     reception_mode = models.TextField(max_length=10,choices=RECEPTION_MODES,default='PR')

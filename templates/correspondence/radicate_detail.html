@@ -80,5 +80,6 @@
 </div>
 <a href="{% url 'correspondence:list_radicate' %}" class="btn btn-primary">Listado</a>
 <a href="{% url 'correspondence:current_user' pk=radicate.pk %}" class="btn btn-success">Trasladar</a>
+<a href="{% url 'correspondence:recordassigned' pk=radicate.pk %}" class="btn btn-success">Incluir en expediente</a>
 <a href="{% url 'correspondence:project_answer' pk=radicate.pk %}" class="btn btn-info">Responder</a>
 {% endblock %}
