@@ -1,7 +1,7 @@
 from typing import Dict
 
 from django.shortcuts import render
-from correspondence.forms import RadicateForm , SearchForm, UserForm,  UserProfileInfoForm, PersonForm, RecordForm, SearchContentForm, ChangeCurrentUserForm ,LoginForm
+from correspondence.forms import RadicateForm , SearchForm, UserForm,  UserProfileInfoForm, PersonForm, RecordForm, SearchContentForm, ChangeCurrentUserForm, ChangeRecordAssignedForm ,LoginForm
 from datetime import datetime
 from django.utils.timezone import get_current_timezone
 from django.conf import settings
@@ -19,6 +19,8 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 from django.contrib.postgres.search import SearchVector, TrigramSimilarity, SearchQuery, SearchRank, SearchHeadline
 
 from django.contrib import messages
+
+from django.core.mail import send_mail
 
 import requests
 import json
@@ -224,7 +226,8 @@ def create_radicate(request,person):
                 action="RADICATE_CREATED",
                 obj=radicate,
                 extra={
-                    "number": radicate.number
+                    "number": radicate.number,
+                    "message": "El radicado %s ha sido creado" % (radicate.number)
                 }
             )
 
@@ -233,10 +236,17 @@ def create_radicate(request,person):
             files = {"filedata": open(os.path.join(BASE_DIR,radicate.document_file.path), "rb")}
             data = {"siteid": "rino", "containerid": "files"}
 
+            send_mail(
+                'Notificación RINO: recepción de radicado',
+                'Buenos días señor usuario.',
+                'notificaciones-rino@gmail.com',
+                [instance.person.email],
+            )
+
             try:
                 r = requests.post(url, files=files, data=data, auth=auth)
                 json_response =(json.loads(r.text))
-                radicate.set_cmis_id(json_response['nodeRef'][24:])
+                radicate.set_cmis_id(json_response['entry']['id'])
 
             except Exception as Error:
 
@@ -270,6 +280,42 @@ class CurrentUserUpdate(UpdateView):
     model = Radicate
     template_name_suffix = '_currentuser_update_form'
     form_class = ChangeCurrentUserForm
+
+class RecordAssignedUpdate(UpdateView):
+    model = Radicate
+    template_name_suffix = '_recordassigned_update_form'
+    form_class = ChangeRecordAssignedForm
+
+    def form_valid(self, form):
+    
+        response = super(RecordAssignedUpdate, self).form_valid(form)
+        url = settings.ECM_RECORD_ASSIGN_URL + self.object.cmis_id + '/move'
+        auth = (settings.ECM_USER, settings.ECM_PASSWORD)
+        data = '{"targetParentId": "' + self.object.record.cmis_id + '"}' 
+
+        log(
+            user=self.request.user,
+            action="RADICATE_ASSIGNED_TO_RECORD",
+            obj=self.object,
+            extra={
+                "number": self.object.number,
+                "record": self.object.record.name,
+                "message": "El radicado %s ha sido incluído en el expediente %s" % (self.object.number, self.object.record.name)
+            }
+        )
+
+        try:
+            r = requests.post(url, data=data, auth=auth)
+            json_response =(json.loads(r.text))
+            print(json_response)
+            messages.success(self.request, "El archivo se ha guardado correctamente en el expediente")
+            return response
+
+        except Exception as Error:
+            logger.error(Error)
+            messages.error(self.request,"Ha ocurrido un error al actualizar el archivo en el gestor de contenido")
+            self.object = None
+            return self.form_invalid(form)
 
 
 def edit_radicate(request,id):
@@ -363,12 +409,27 @@ class RecordCreateView(CreateView):
     model = Record
     form_class = RecordForm
 
-    # def form_valid(self, form):
-    #     self.object = form.save()
-    #     # do something with self.object
-    #     # remember the import: from django.http import HttpResponseRedirect
-    #     messages.success(self.request,"El expediente se ha creado correctamente")
-    #     return HttpResponseRedirect(self.get_success_url())
+    def form_valid(self, form):
+
+        response = super(RecordCreateView, self).form_valid(form)
+        url = settings.ECM_RECORD_URL
+        auth = (settings.ECM_USER, settings.ECM_PASSWORD)
+        print(self.object)
+        data = '{"name": "' + self.object.name + '", "nodeType": "cm:folder"}'
+
+        try:
+            r = requests.post(url, data=data, auth=auth)
+            json_response =(json.loads(r.text))
+            print(json_response)
+            self.object.set_cmis_id(json_response['entry']['id'])
+            messages.success(self.request, "El expediente se ha guardado correctamente")
+            return response
+
+        except Exception as Error:
+            logger.error(Error)
+            messages.error(self.request,"Ha ocurrido un error al crear el expediente en el gestor de contenido")
+            self.object = None
+            return self.form_invalid(form)
 
 
 
@@ -378,6 +439,26 @@ class RecordDetailView(DetailView):
 class RecordUpdateView(UpdateView):
     model = Record
     form_class = RecordForm
+
+    def form_valid(self, form):
+    
+        response = super(RecordUpdateView, self).form_valid(form)
+        url = settings.ECM_RECORD_UPDATE_URL + self.object.cmis_id
+        auth = (settings.ECM_USER, settings.ECM_PASSWORD)
+        data = '{"name": "' + self.object.name + '"}' 
+
+        try:
+            r = requests.put(url, data=data, auth=auth)
+            json_response =(json.loads(r.text))
+            print(json_response)
+            messages.success(self.request, "El expediente se ha guardado correctamente")
+            return response
+
+        except Exception as Error:
+            logger.error(Error)
+            messages.error(self.request,"Ha ocurrido un error al actualizar el expediente en el gestor de contenido")
+            self.object = None
+            return self.form_invalid(form)
 
 class RecordListView(ListView):
     model = Record

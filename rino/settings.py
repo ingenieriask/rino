@@ -55,6 +55,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'crum.CurrentRequestUserMiddleware',
 ]
 
 ROOT_URLCONF = 'rino.urls'
@@ -93,9 +94,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'rino',
         'USER': 'rino',
-        'PASSWORD': 'Mamacall3128!!..',
-        'HOST': '192.168.1.116',
-        'PORT': '5433'
+        'PASSWORD': 'rino',
+        'HOST': 'localhost',
+        'PORT': '5434'
     }
 }
 
@@ -159,12 +160,16 @@ XS_SHARING_ALLOWED_METHODS = ['POST', 'GET', 'OPTIONS', 'PUT', 'DELETE']
 
 # Config constants
 
-ECM_SEARCH_URL = 'http://192.168.1.116:8080/alfresco/api/-default-/public/search/versions/1/search'
-ECM_UPLOAD_URL = 'http://192.168.1.116:8080/alfresco/service/api/upload'
-CONVERT_URL = 'http://192.168.1.116:3000/convert/office'
+ECM_SEARCH_URL = 'http://localhost:8080/alfresco/api/-default-/public/search/versions/1/search'
+ECM_UPLOAD_URL = 'http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/5b57c8cc-5c0d-459f-894e-49744ed66a55/children?autoRename=false'
+ECM_RECORD_URL = 'http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/ca185275-001c-4d99-a701-7175f53bda70/children?autoRename=false'
+ECM_RECORD_ASSIGN_URL = 'http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/'
+ECM_RECORD_UPDATE_URL = 'http://localhost:8080/alfresco/api/-default-/public/alfresco/versions/1/nodes/'
+
+CONVERT_URL = 'http://localhost:3000/convert/office'
 
 ECM_USER = 'admin'
-ECM_PASSWORD = 'Mamacall3128!!..'
+ECM_PASSWORD = 'adminadmin'
 
 from django.contrib.messages import constants as messages
 
@@ -176,12 +181,12 @@ MESSAGE_TAGS = {
     messages.ERROR: 'alert-danger',
 }
 
-#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'donaldo.jinette@gmail.com'
-EMAIL_HOST_PASSWORD = 'XXXXXXXX'
-EMAIL_PORT = 587
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'mcubides@gmail.com'
+EMAIL_HOST_PASSWORD = 'Alcon132644*.'
+EMAIL_PORT = 587
 
-
+AUTH_USER_MODEL = 'auth.User'
 

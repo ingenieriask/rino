@@ -4,8 +4,8 @@ from crispy_forms.layout import Layout, Submit, Row, Column
 from django.contrib.auth.models import User
 from correspondence.models import Radicate, City, UserProfileInfo, Person, Record
 from pinax.eventlog.models import log, Log
-from crispy_forms.layout import Field
-
+from django.urls import reverse
+from crispy_forms.layout import Field, ButtonHolder, Button
 
 class CustomFileInput(Field):
     template = 'custom_fileinput.html'
@@ -142,8 +142,14 @@ class ChangeCurrentUserForm(forms.ModelForm):
             radicate.save()
         return radicate
 
-class DateInput(forms.DateInput):
-    input_type = 'date'
+class ChangeRecordAssignedForm(forms.ModelForm):
+    class Meta:
+        model = Radicate
+        fields = ['record']
+        labels = {'record': 'Expediente'}
+        widgets = {
+            'record': forms.Select(attrs={'class': 'selectpicker', 'data-live-search': 'true'})
+        }
 
 class RecordForm(forms.ModelForm):
     class Meta:
@@ -161,9 +167,27 @@ class RecordForm(forms.ModelForm):
         widgets = {
             'retention': forms.Select(attrs={'class': 'selectpicker', 'data-live-search': 'true', 'data-size': '7'}),
             'responsable': forms.Select(attrs={'class': 'selectpicker', 'data-live-search': 'true', 'data-size': '7'}),
-            'init_process_date': DateInput(),
-            'init_date': DateInput(),
-            'final_date': DateInput(),
+            'init_process_date': forms.DateInput(
+                format=('%Y-%m-%d'),
+                attrs={
+                    'class': 'form-control',
+                    'type': 'date'
+                }
+            ),
+            'init_date': forms.DateInput(
+                format=('%Y-%m-%d'),
+                attrs={
+                    'class': 'form-control',
+                    'type': 'date'
+                }
+            ),
+            'final_date': forms.DateInput(
+                format=('%Y-%m-%d'),
+                attrs={
+                    'class': 'form-control',
+                    'type': 'date'
+                }
+            )
         }
 
     # def save(self, commit=True):
@@ -182,40 +206,44 @@ class RecordForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(RecordForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper(self)
+        cancel_url = reverse('correspondence:list_records')
         self.helper.layout = Layout(
-        Row(
-            Column('is_tvd', css_class='form-group col-md-12 mb-0'),
-            css_class='form-row'
-        ),
-        Row(
-            Column('name', css_class='form-group col-md-12 mb-0'),
-            css_class='form-row'
-        ),
-        Row(
-            Column('retention', css_class='form-group col-md-12 mb-0'),
-            css_class='form-row'
-        ),
-        Row(
-            Column('subject', css_class='form-group col-md-6 mb-0'),
-            Column('source', css_class='form-group col-md-6 mb-0'),
-            css_class='form-row'
-        ),
-        Row(
-            Column('process_type', css_class='form-group col-md-6 mb-0'),
-            Column('responsable', css_class='form-group col-md-6 mb-0'),
-            css_class='form-row'
-        ),
-        Row(
-            Column('init_process_date', css_class='form-group col-md-4 mb-0'),
-            Column('init_date', css_class='form-group col-md-4 mb-0'),
-            Column('final_date', css_class='form-group col-md-4 mb-0'),
-            css_class='form-row'
-        ),
-        Row(
-            Column('phase', css_class='form-group col-md-4 mb-0'),
-            Column('final_disposition', css_class='form-group col-md-4 mb-0'),
-            Column('security_level', css_class='form-group col-md-4 mb-0'),
-            css_class='form-row'
-        ),
-        'parent',
-    )
+            Row(
+                Column('is_tvd', css_class='form-group col-md-12 mb-0'),
+                css_class='form-row'
+            ),
+            Row(
+                Column('name', css_class='form-group col-md-12 mb-0'),
+                css_class='form-row'
+            ),
+            Row(
+                Column('retention', css_class='form-group col-md-12 mb-0'),
+                css_class='form-row'
+            ),
+            Row(
+                Column('subject', css_class='form-group col-md-6 mb-0'),
+                Column('source', css_class='form-group col-md-6 mb-0'),
+                css_class='form-row'
+            ),
+            Row(
+                Column('process_type', css_class='form-group col-md-6 mb-0'),
+                Column('responsable', css_class='form-group col-md-6 mb-0'),
+                css_class='form-row'
+            ),
+            Row(
+                Column('init_process_date', css_class='form-group col-md-4 mb-0'),
+                Column('init_date', css_class='form-group col-md-4 mb-0'),
+                Column('final_date', css_class='form-group col-md-4 mb-0'),
+                css_class='form-row'
+            ),
+            Row(
+                Column('phase', css_class='form-group col-md-4 mb-0'),
+                Column('final_disposition', css_class='form-group col-md-4 mb-0'),
+                Column('security_level', css_class='form-group col-md-4 mb-0'),
+                css_class='form-row'
+            ),
+            ButtonHolder(
+                Submit('submit', 'Guardar', css_class='btn btn-success'),
+                Button('cancel', 'Volver', onclick='window.location.href="{}"'.format(cancel_url), css_class='btn btn-primary')
+            )
+        )

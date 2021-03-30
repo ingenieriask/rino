@@ -2,6 +2,8 @@ from django.db import models
 from datetime import datetime
 from django.contrib.auth.models import User
 from django.urls import reverse
+from django.conf import settings
+from crum import get_current_user
 
 
 # Create your models here.
@@ -136,6 +138,7 @@ class Radicate(models.Model):
     type = models.TextField(max_length=60,null=False,choices=RADICATE_TYPES,default='EN')
     date_radicated = models.DateTimeField(default=datetime.now,db_index=True)
     creator = models.ForeignKey(UserProfileInfo,on_delete=models.CASCADE,related_name='radicates_creator',default=False)
+    record = models.ForeignKey('Record',on_delete=models.CASCADE,related_name='radicates',blank=True,null=True)
     person = models.ForeignKey('Person',on_delete=models.CASCADE,related_name='radicates_person',default=False)
     current_user = models.ForeignKey(UserProfileInfo,on_delete=models.CASCADE,related_name='radicates_user',default=False)
     reception_mode = models.TextField(max_length=10,choices=RECEPTION_MODES,default='PR')
@@ -165,7 +168,16 @@ class DocsRetention(models.Model):
     def __str__(self):
         return self.subraft.description + ' - ' + self.office.name
 
-class Record(models.Model):
+class BaseModel(models.Model):
+    user_creation = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='user_creation', null=True, blank=True)
+    user_updated = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='user_updated', null=True, blank=True)
+    date_creation = models.DateTimeField(auto_now=False, auto_now_add=True, null=True, blank=True)
+    date_updated = models.DateTimeField(auto_now=True, auto_now_add=False, null=True, blank=True)
+
+    class Meta:
+        abstract = True
+
+class Record(BaseModel):
     
     PROCESS_TYPES = [
         ('Proceso de Gestion de Archivo','Proceso de Gestion de Archivo'),
@@ -201,6 +213,8 @@ class Record(models.Model):
     final_disposition = models.CharField(max_length=128,null=False,choices=FINAL_DISPOSITION_TYPES,default='CO')
     security_level = models.CharField(max_length=128,null=False,choices=SECURITY_LEVELS,default='PU')
     is_tvd = models.BooleanField()
+
+    cmis_id = models.TextField(max_length=128,null=True)
     
     name = models.CharField(max_length=256)
     subject = models.CharField(max_length=256)
@@ -215,6 +229,19 @@ class Record(models.Model):
 
     def __str__(self):
         return self.name
+
+    def set_cmis_id(self,cmis_id):
+        self.cmis_id = cmis_id
+        self.save()
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        user = get_current_user()
+        if user is not None:
+            if not self.pk:
+                self.user_creation = user
+            else:
+                self.user_updated = user
+        super(Record, self).save()
     
 
 def get_first_name(self):
