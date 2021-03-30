@@ -29,4 +29,5 @@ urlpatterns = [
     path('record_detail/<int:pk>/', views.RecordDetailView.as_view(), name='detail_record'),
     path('record/edit/<int:pk>/', views.RecordUpdateView.as_view(), name='edit_record'),
     path('record/list/', views.RecordListView.as_view(), name='list_records'),
+    path('record/process_excel_radicates/', views.ProcessExcelRadicates.as_view(), name='process_excel_radicates'),
 ]

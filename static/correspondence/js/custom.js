@@ -20,8 +20,6 @@ $(document).ready(function(){
       });
 
       $('#id_office').on('change',function(evt){
-        console.log("cambio !!!");
-        console.log(this.value);
         $('#id_doctype').html('<option>Example 1</option><option>Example2</option>').selectpicker('refresh');
 
       });
