@@ -15,6 +15,7 @@ from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView
 from django.views.generic.list import ListView
 from django.views.generic.edit import UpdateView
+from django.views.generic import View
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.contrib.postgres.search import SearchVector, TrigramSimilarity, SearchQuery, SearchRank, SearchHeadline
 
@@ -25,8 +26,10 @@ from django.core.mail import send_mail
 import requests
 import json
 import os
+import io
 from docx import Document
 import logging
+import xlsxwriter
 
 from pinax.eventlog.models import log, Log
 logger = logging.getLogger(__name__)
@@ -491,4 +494,63 @@ class RecordListView(ListView):
 
 
 def charts(request):
-    return render(request, 'correspondence/charts.html', context={})
+    return render(request,'correspondence/charts.html',context={})
+
+def get_radicates_data(request):
+    return Radicate.objects.all().filter(current_user=request.user.profile_user.pk)
+
+class ProcessExcelRadicates(View):
+    
+    def get(self, request):
+
+        # Create an in-memory output file for the new workbook.
+        output = io.BytesIO()
+
+        # Even though the final file will be in memory the module uses temp
+        # files during assembly for efficiency. To avoid this on servers that
+        # don't allow temp files, for example the Google APP Engine, set the
+        # 'in_memory' Workbook() constructor option as shown in the docs.
+        workbook = xlsxwriter.Workbook(output)
+        worksheet = workbook.add_worksheet()
+        
+        # Add a bold format to use to highlight cells.
+        bold = workbook.add_format({'bold': True})
+
+        # Get some data to write to the spreadsheet.
+        data = get_radicates_data(request)
+
+        worksheet.set_column(0, 0, 30)
+        worksheet.set_column(0, 1, 30)
+        worksheet.set_column(0, 2, 30)
+        worksheet.set_column(0, 3, 30)
+        worksheet.set_column(0, 4, 30)
+
+        worksheet.write('A1', 'Fecha', bold)
+        worksheet.write('B1', 'Número', bold)
+        worksheet.write('C1', 'Asunto', bold)
+        worksheet.write('D1', 'Remitente', bold)
+        worksheet.write('E1', 'Estado', bold)
+
+        # Write some test data.
+        for row_num, columns in enumerate(data):
+            worksheet.write(row_num+1, 0, columns.date_radicated.strftime('%Y-%m-%d'))
+            worksheet.write(row_num+1, 1, columns.number)
+            worksheet.write(row_num+1, 2, columns.subject)
+            worksheet.write(row_num+1, 3, columns.person.name)
+            worksheet.write(row_num+1, 4, columns.type)
+
+        # Close the workbook before sending the data.
+        workbook.close()
+
+        # Rewind the buffer.
+        output.seek(0)
+
+        # Set up the Http response.
+        filename = 'radicados.xlsx'
+        response = HttpResponse(
+            output,
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename=%s' % filename
+
+        return response

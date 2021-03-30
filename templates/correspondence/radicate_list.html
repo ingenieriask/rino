@@ -4,6 +4,9 @@
   <div class="card mb-4">
       <div class="card-header">Listado de radicados</div>
       <div class="card-body">
+        <div class="text-right">
+          <a href="{% url 'correspondence:process_excel_radicates' %}" class="btn btn-info" target="_blank"><i data-feather="file-text"></i>Exportar</a>
+        </div>
         <div class="datatable">
           <table class="table table-bordered table-hover" id="radicateListTable" width="100%" cellspacing='0'>
             <thead>
