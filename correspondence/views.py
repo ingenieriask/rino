@@ -236,7 +236,7 @@ def create_radicate(request,person):
             try:
                 r = requests.post(url, files=files, data=data, auth=auth)
                 json_response =(json.loads(r.text))
-                radicate.set_cmis_id(json_response['nodeRef'][24:])
+                radicate.set_cmis_id(json_response['entry']['id'])
 
             except Exception as Error:
 
@@ -363,12 +363,29 @@ class RecordCreateView(CreateView):
     model = Record
     form_class = RecordForm
 
-    # def form_valid(self, form):
-    #     self.object = form.save()
-    #     # do something with self.object
-    #     # remember the import: from django.http import HttpResponseRedirect
-    #     messages.success(self.request,"El expediente se ha creado correctamente")
-    #     return HttpResponseRedirect(self.get_success_url())
+    def form_valid(self, form):
+
+        response = super(RecordCreateView, self).form_valid(form)
+        url = settings.ECM_RECORD_URL
+        auth = (settings.ECM_USER, settings.ECM_PASSWORD)
+        print(self.object)
+        data = '{"name": "' + self.object.name + '", "nodeType": "cm:folder"}'
+
+        try:
+            r = requests.post(url, data=data, auth=auth)
+            json_response =(json.loads(r.text))
+            print(json_response)
+            self.object.set_cmis_id(json_response['entry']['id'])
+            messages.success(self.request, "El expediente se ha guardado correctamente")
+            print('success')
+            return response
+
+        except Exception as Error:
+            logger.error(Error)
+            messages.error(self.request,"Ha ocurrido un error al crear el expediente en el gestor de contenido")
+            self.object = None
+            print('error')
+            return self.form_invalid(form)
 
 
 
@@ -378,6 +395,26 @@ class RecordDetailView(DetailView):
 class RecordUpdateView(UpdateView):
     model = Record
     form_class = RecordForm
+
+    def form_valid(self, form):
+    
+        response = super(RecordUpdateView, self).form_valid(form)
+        url = settings.ECM_RECORD_UPDATE_URL + self.object.cmis_id
+        auth = (settings.ECM_USER, settings.ECM_PASSWORD)
+        data = '{"name": "' + self.object.name + '"}' 
+
+        try:
+            r = requests.put(url, data=data, auth=auth)
+            json_response =(json.loads(r.text))
+            print(json_response)
+            messages.success(self.request, "El expediente se ha guardado correctamente")
+            return response
+
+        except Exception as Error:
+            logger.error(Error)
+            messages.error(self.request,"Ha ocurrido un error al actualizar el expediente en el gestor de contenido")
+            self.object = None
+            return self.form_invalid(form)
 
 class RecordListView(ListView):
     model = Record

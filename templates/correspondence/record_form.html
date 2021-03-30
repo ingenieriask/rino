@@ -4,13 +4,9 @@
 <div class="card mb-4">
     <div class="card-header">Expediente</div>
     <div class="card-body">
-    <form  method="post">
       {% csrf_token %}
       {% load crispy_forms_tags %}
       {% crispy form %}
-      <input type="submit" class="btn btn-success" value="Guardar"/>
-      <a href="{% url 'correspondence:list_records' %}" class="btn btn-primary">Volver</a>
-    </form>
     </div>
 </div>
 
