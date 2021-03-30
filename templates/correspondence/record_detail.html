@@ -17,10 +17,12 @@
       <p><b>Fase:</b> {{ record.phase }}</p>
       <p><b>Disposición final:</b> {{ record.final_disposition }}</p>
       <p><b>Nivel de seguridad:</b> {{ record.security_level }}</p>
-
     </div>
-
-    <div class="card mb-4">
+    <div class="card-footer">
+      Resumen del expediente
+    </div>
+</div>
+  <div class="card mb-4">
       <div class="card-header">Listado de radicados</div>
       <div class="card-body">
         <div class="datatable">
@@ -67,8 +69,5 @@
         </div>
       </div>
   </div>
-    <div class="card-footer">
-    </div>
-</div>
 <a href="{% url 'correspondence:list_records' %}" class="btn btn-primary">Listado</a>
 {% endblock %}
