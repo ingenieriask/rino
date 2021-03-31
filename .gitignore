@@ -8,4 +8,3 @@ __pycache__/
 correspondence/migrations/
 rino/__pycache__/*.*
 correspondence/__pycache__/*.pyc
-rino/settings.py
