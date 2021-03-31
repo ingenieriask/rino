@@ -256,8 +256,9 @@ def create_radicate(request, person):
             )
 
             try:
+                data = {"nodeType": "cm:content"}
                 res_upload = requests.post(settings.ECM_UPLOAD_URL, files=files, data=data,
-                                           auth=(settings.ECM_USER, settings.ECM_PASSWORD))
+                                           auth=HTTPBasicAuth(settings.ECM_USER, settings.ECM_PASSWORD))
                 json_response = (json.loads(res_upload.text))
                 node_id = json_response['entry']['id']
                 radicate.set_cmis_id(node_id)
