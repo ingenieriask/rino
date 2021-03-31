@@ -251,7 +251,7 @@ def create_radicate(request, person):
             send_mail(
                 'Notificación RINO: recepción de radicado',
                 'Buenos días señor usuario.',
-                'notificaciones-rino@gmail.com',
+                'rino@skillnet.com.co',
                 [instance.person.email],
             )
 

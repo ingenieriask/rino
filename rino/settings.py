@@ -31,7 +31,7 @@ SECRET_KEY = env.str('RINO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.1.103', 'localhost', '192.168.1.108']
+ALLOWED_HOSTS = ['192.168.1.103', 'localhost', '192.168.1.108', 'djrino.azurewebsites.net']
 
 # Application definition
 
@@ -142,6 +142,7 @@ STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
+    os.path.join(BASE_DIR, "static/correspondence/thumbnails")
 ]
 
 MEDIA_ROOT = MEDIA_DIR
