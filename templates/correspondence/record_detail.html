@@ -4,6 +4,12 @@
 <div class="card mb-4">
     <div class="card-header">Expediente {{ Record.name }}</div>
     <div class="card-body">
+      <div class="jumbotron">
+        <h1 class="display-4">{{ record.name }}</h1>
+        <p class="lead">{{ record.subject  }}</p>
+        <hr class="my-4">
+        <p>{{ record.retention }}</p>
+      </div>
       <p><b>Es TVD:</b> {{ record.is_tvd }}</p>
       <p><b>Nombre:</b> {{ record.name }}</p>
       <p><b>Tipificación:</b> {{ record.retention }}</p>
@@ -17,10 +23,12 @@
       <p><b>Fase:</b> {{ record.phase }}</p>
       <p><b>Disposición final:</b> {{ record.final_disposition }}</p>
       <p><b>Nivel de seguridad:</b> {{ record.security_level }}</p>
-
     </div>
-
-    <div class="card mb-4">
+    <div class="card-footer">
+      Resumen del expediente
+    </div>
+</div>
+  <div class="card mb-4">
       <div class="card-header">Listado de radicados</div>
       <div class="card-body">
         <div class="datatable">
@@ -67,8 +75,5 @@
         </div>
       </div>
   </div>
-    <div class="card-footer">
-    </div>
-</div>
 <a href="{% url 'correspondence:list_records' %}" class="btn btn-primary">Listado</a>
 {% endblock %}
