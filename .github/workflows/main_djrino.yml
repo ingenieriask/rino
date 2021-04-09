@@ -59,4 +59,4 @@ jobs:
         with:
           app-name: 'djrino'
           slot-name: 'production'
-          publish-profile: ${{ secrets.AzureAppService_PublishProfile_2f39f4c2b85642f39d0e2e1f6433b387 }}
+          publish-profile: ${{ secrets.AzureAppService_PublishProfile_ff40e5d833bc468a96c01f6364499fab }}
